@@ -16,6 +16,7 @@ public class RegisterAdminCommand : IRequest<Result>
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Email { get; set; }
+    public string Password { get; set; }
 }
 
 public class RegisterAdminCommandHandler : IRequestHandler<RegisterAdminCommand, Result>
@@ -47,8 +48,6 @@ public class RegisterAdminCommandHandler : IRequestHandler<RegisterAdminCommand,
         if (userExist != null)
             return Result.Failure(request, $"{userExist.Email} already exists");
 
-        // Generate a random password for the admin
-        string randomPassword = PasswordGenerator.GenerateRandomPassword();
 
         // Create the admin entity
         User user = new()
@@ -67,7 +66,7 @@ public class RegisterAdminCommandHandler : IRequestHandler<RegisterAdminCommand,
         };
 
         // Create the admin in the UserManager
-        IdentityResult result = await _userManager.CreateAsync(user, randomPassword);
+        IdentityResult result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
         {
             string errors = string.Join("\n", result.Errors.Select(e => e.Description));
@@ -84,10 +83,8 @@ public class RegisterAdminCommandHandler : IRequestHandler<RegisterAdminCommand,
             await _userManager.AddToRoleAsync(user, roleName);
         }
 
-        // Send the email with admin login details (email and password)
-        await _emailSender.SendLoginDetailsAsync(user.Email, "Admin", randomPassword);
 
-        return Result.Success<RegisterAdminCommand>("Admin registered successfully, login details sent via email!", user.Id);
+        return Result.Success<RegisterAdminCommand>("Admin registered successfully", user.Id);
     }
 
   

@@ -1,6 +1,5 @@
 ﻿using Domain.Enum;
 using Microsoft.AspNetCore.Identity;
-
 namespace Domain.Common.Entities;
 public abstract class BaseUser : IdentityUser
 {
@@ -17,9 +16,11 @@ public abstract class BaseUser : IdentityUser
 
     public string UserTypeDesc { get; set; }
     
-    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+    public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
     
-    public string LastModifiedBy { get; set; } = string.Empty;
+    public DateTime? CreatedDate { get; set; } = DateTime.UtcNow;
     
-    public DateTime LastModifiedDate { get; set; }
+    public string? LastModifiedBy { get; set; } = string.Empty;
+    
+    public DateTime? LastModifiedDate { get; set; }
 }

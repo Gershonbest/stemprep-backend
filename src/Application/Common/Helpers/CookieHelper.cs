@@ -26,7 +26,7 @@ namespace Application.Common
             var refreshTokenOptions = new CookieOptions
             {
                 HttpOnly = false, // The cookie is accessible only by the server
-                Expires = DateTime.UtcNow.AddHours(24), // Set expiration time for refresh token
+                Expires = DateTime.UtcNow.AddDays(14), // Set expiration time for refresh token
                 SameSite = SameSiteMode.Strict, // Restrict cookie to same-site requests
                 Secure = true // Ensure HTTPS usage in production
             };

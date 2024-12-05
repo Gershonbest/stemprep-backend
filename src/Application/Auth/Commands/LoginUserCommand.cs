@@ -8,6 +8,7 @@ using Domain.Entities;
 using Domain.Enum;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
+
 namespace Application.Auth.Commands;
 
 public class LoginUserCommand : IRequest<Result>
@@ -20,21 +21,21 @@ public class StudentLoginCommandHandler : IRequestHandler<LoginUserCommand, Resu
 {
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
-    private readonly IGenerateToken _generateToken;
+    private readonly ITokenGenerator _tokenGenerator;
     private readonly IEmailService _emailService;
     private readonly IDatabase _redisDb;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public StudentLoginCommandHandler(SignInManager<User> signInManager,
                                       UserManager<User> userManager,
-                                      IGenerateToken generateToken,
+                                      ITokenGenerator generateToken,
                                       IEmailService emailService,
                                       IConnectionMultiplexer redis,
                                       IHttpContextAccessor httpContextAccessor)
     {
         _signInManager = signInManager;
         _userManager = userManager;
-        _generateToken = generateToken;
+        _tokenGenerator = generateToken;
         _emailService = emailService;
         _redisDb = redis.GetDatabase();
         _httpContextAccessor = httpContextAccessor;
@@ -79,7 +80,7 @@ public class StudentLoginCommandHandler : IRequestHandler<LoginUserCommand, Resu
             return Result.Failure<LoginUserCommand>("Invalid Email or Password");
         }
 
-        var tokens = _generateToken.GenerateTokens(user.Id, user.Email!, user.UserType.ToString());
+        var tokens = _tokenGenerator.GenerateTokens(user.Id, user.Email!, user.UserType.ToString());
 
         CookieHelper.SetTokensInCookies(_httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
     

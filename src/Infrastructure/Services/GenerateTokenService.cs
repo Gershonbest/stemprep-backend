@@ -6,7 +6,7 @@ using Application.Interfaces;
 
 namespace Infrastructure.Services  
 {  
-    public class GenerateTokenService : IGenerateToken  
+    public class GenerateTokenService : ITokenGenerator  
     {  
         private readonly string _key; // Key for signing access tokens  
         private readonly string _issuer; // Issuer of the tokens  

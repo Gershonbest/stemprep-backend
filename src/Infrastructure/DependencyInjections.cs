@@ -15,26 +15,31 @@ namespace Infrastructure
         {
 
             services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("defaultConnection")));
+                   options.UseNpgsql(configuration.GetConnectionString("defaultConnection")));
 
             services.AddSingleton<IEmailService>(provider =>
             {
                 return new EmailService(configuration);
             });
-
+            
             services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 
-
+            // Register Identity
+            services.AddIdentityCore<User>()
+                    .AddRoles<IdentityRole>()
+                    .AddEntityFrameworkStores<ApplicationDbContext>()
+                    .AddApiEndpoints();
+            
             var accesskey = configuration["Jwt:AccessKey"];
-            var refreshkey = configuration["Jwt:RefreshKey"];
+            var refreshkey =configuration["Jwt:RefreshKey"];
             var issuer = configuration["Jwt:Issuer"];
             var audience = configuration["Jwt:Audience"];
 
-            services.AddScoped<IGenerateToken, GenerateTokenService>(provider =>
+            services.AddScoped<ITokenGenerator, GenerateTokenService>(provider =>
             {
                 return new GenerateTokenService(accesskey, refreshkey, issuer, audience);
             });
-            
+
             return services;
         }
     }

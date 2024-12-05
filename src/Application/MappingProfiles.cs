@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using Application.Dto;
+using AutoMapper;
+using Domain.Entities;
 
 namespace Application
 {

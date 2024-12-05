@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241204151234_initial")]
+    [Migration("20241205200303_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -37,7 +37,7 @@ namespace Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Discriminator")
@@ -52,16 +52,21 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTime>("EnrollmentDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("LastModifiedDate")
+                    b.Property<DateTime?>("LastModifiedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
@@ -101,12 +106,14 @@ namespace Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("UserStatusDes")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("UserType")
                         .HasColumnType("integer");
 
                     b.Property<string>("UserTypeDesc")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -123,6 +130,61 @@ namespace Infrastructure.Migrations
                     b.HasDiscriminator().HasValue("BaseUser");
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Domain.Entities.Course", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CourseImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("InstructorId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("InstructorName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ModifiedDated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ModuleStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ModuleStatusDes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Objectives")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Modules");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -264,7 +326,20 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsVerified")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("ProgrammeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StudentNumber")
+                        .HasColumnType("integer");
+
                     b.HasDiscriminator().HasValue("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Course", b =>
+                {
+                    b.HasOne("Domain.Entities.User", null)
+                        .WithMany("EnrolledCourses")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -316,6 +391,11 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.User", b =>
+                {
+                    b.Navigation("EnrolledCourses");
                 });
 #pragma warning restore 612, 618
         }
