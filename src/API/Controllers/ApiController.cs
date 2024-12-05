@@ -1,6 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 
@@ -21,7 +23,7 @@ namespace API.Controllers
             _mediator = mediator;
 
             // Retrieve the access token from cookies  
-            accessToken = _contextAccessor?.HttpContext?.Request.Cookies["talent-portal-accessToken"];
+            accessToken = _contextAccessor?.HttpContext?.Request.Cookies["stem-prep-accessToken"];
 
             // Validate and parse the JWT token safely  
             if (!string.IsNullOrEmpty(accessToken))

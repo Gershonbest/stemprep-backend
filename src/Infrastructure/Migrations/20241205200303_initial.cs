@@ -31,17 +31,20 @@ namespace Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    FirstName = table.Column<string>(type: "text", nullable: true),
-                    LastName = table.Column<string>(type: "text", nullable: true),
+                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    LastName = table.Column<string>(type: "text", nullable: false),
                     UserStatus = table.Column<int>(type: "integer", nullable: false),
-                    UserStatusDes = table.Column<string>(type: "text", nullable: true),
+                    UserStatusDes = table.Column<string>(type: "text", nullable: false),
                     UserType = table.Column<int>(type: "integer", nullable: false),
-                    UserTypeDesc = table.Column<string>(type: "text", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserTypeDesc = table.Column<string>(type: "text", nullable: false),
+                    EnrollmentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     LastModifiedBy = table.Column<string>(type: "text", nullable: true),
-                    LastModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Discriminator = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
                     IsVerified = table.Column<bool>(type: "boolean", nullable: true),
+                    ProgrammeId = table.Column<int>(type: "integer", nullable: true),
+                    StudentNumber = table.Column<int>(type: "integer", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -168,6 +171,35 @@ namespace Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Modules",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "text", nullable: true),
+                    CourseImageUrl = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Objectives = table.Column<string>(type: "text", nullable: false),
+                    InstructorName = table.Column<string>(type: "text", nullable: false),
+                    InstructorId = table.Column<string>(type: "text", nullable: true),
+                    ModuleStatus = table.Column<int>(type: "integer", nullable: false),
+                    ModuleStatusDes = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: true),
+                    Guid = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedDated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Modules", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Modules_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -204,6 +236,11 @@ namespace Infrastructure.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Modules_UserId",
+                table: "Modules",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -223,6 +260,9 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Modules");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

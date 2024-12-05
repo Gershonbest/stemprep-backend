@@ -3,6 +3,8 @@ using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Application.Common.Models;
 using Application.Interfaces;
+using Domain.Common.Enum;
+using Infrastructure.Templates;
 
 namespace Infrastructure.Services
 {
@@ -121,7 +123,7 @@ namespace Infrastructure.Services
 
         private static string ReplaceTemplateVariables(string subject, string formattedBody)
         {
-            string htmlTemplate = "EmailTemplate.GetTemplate()";
+            string htmlTemplate = EmailTemplate.GetTemplate();
             string formattedHtml = $@"{htmlTemplate}";
             formattedHtml = formattedHtml.Replace("{subject}", subject);
             formattedHtml = formattedHtml.Replace("{body}", formattedBody);

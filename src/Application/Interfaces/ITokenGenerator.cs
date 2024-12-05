@@ -2,7 +2,7 @@
 
 namespace Application.Interfaces  
 {  
-    public interface IGenerateToken  
+    public interface ITokenGenerator  
     {  
         TokenResponse GenerateTokens(string userId, string email, string role);  
 

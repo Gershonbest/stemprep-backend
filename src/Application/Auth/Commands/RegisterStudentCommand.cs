@@ -7,10 +7,6 @@ using Domain.Enum;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using StackExchange.Redis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Auth.Commands;
 
@@ -19,7 +15,7 @@ public class RegisterStudentCommand : IRequest<Result>
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Email { get; set; }
-    public string Password { get; set; } 
+    public string Password { get; set; }
 }
 
 public class RegisterStudentCommandHandler : IRequestHandler<RegisterStudentCommand, Result>
@@ -35,7 +31,7 @@ public class RegisterStudentCommandHandler : IRequestHandler<RegisterStudentComm
         UserManager<User> userManager,
         RoleManager<IdentityRole> roleManager,
         IConnectionMultiplexer redis,
-        IApplicationDbContext context) 
+        IApplicationDbContext context)
     {
         _emailSender = emailSender;
         _userManager = userManager;
@@ -54,7 +50,7 @@ public class RegisterStudentCommandHandler : IRequestHandler<RegisterStudentComm
         if (userExist != null)
             return Result.Failure(request, $"{userExist.Email} already exists");
 
-        
+
         // Create the student entity
         User user = new()
         {
@@ -62,7 +58,7 @@ public class RegisterStudentCommandHandler : IRequestHandler<RegisterStudentComm
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            UserType =  UserType.Student,
+            UserType = UserType.Student,
             UserTypeDesc = UserType.Student.ToString(),
             IsVerified = false,
             UserStatus = Status.Inactive,
@@ -95,7 +91,7 @@ public class RegisterStudentCommandHandler : IRequestHandler<RegisterStudentComm
 
         // Send the registration code to the user's email
         await _emailSender.SendRegistrationConfirmationEmailAsync(user.Email, user.FirstName, registrationCode);
-        
+
 
         return Result.Success<RegisterStudentCommand>("Registration code sent successfully! Please confirm your registration.", user.Id);
     }
