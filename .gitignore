@@ -1,52 +1,73 @@
-# Prerequisites
-*.d
+# .NET build outputs
+bin/
+obj/
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+# ASP.NET Core
+wwwroot/
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.log.*
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vscode/
+*.vs/
 
-# Linker output
-*.ilk
-*.map
-*.exp
+# Visual Studio
+.vs/
+*.csproj.user
+*.csproj.*
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
 
-# Precompiled Headers
-*.gch
-*.pch
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+*.nupkg*
+.nuget/
+packages/
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+# ASP.NET
+App_Data/
+#appsettings*.json
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+# Environment files
+.env
+.env.*.local
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Other
+*.swp
+*.swo
+*.tmp
+*.bak
+*.pid
+*.seed
+*.suo
+*.psess
 *.pdb
+*.dbmdl
+*.jfm
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Ignore global gitignore
+.gitignore_global
+
+# user settings
+*.user
+
+**/obj/
