@@ -1,8 +1,9 @@
 using Application.Common.Models;
+using Application.Interfaces;
 using Domain.Entities;
 using Domain.Enum;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
 
@@ -15,34 +16,49 @@ public class ConfirmRegistrationCommand : IRequest<Result>
 }
 
 public class ConfirmRegistrationCommandHandler(
-    UserManager<User> userManager,
+    IApplicationDbContext context,
     IConnectionMultiplexer redis)
     : IRequestHandler<ConfirmRegistrationCommand, Result>
 {
-    private readonly UserManager<User> _userManager = userManager;
     private readonly IDatabase _redisDb = redis.GetDatabase();
 
     public async Task<Result> Handle(ConfirmRegistrationCommand request, CancellationToken cancellationToken)
     {
-        User? student = await _userManager.FindByEmailAsync(request.Email);
-        if (student == null)
-            return Result.Failure("Student not found.");
+        Student student = await context.Students.FirstOrDefaultAsync(s => s.Email == request.Email, cancellationToken);
+        Parent parent = null; // Declare parent outside the if block
 
-        string? storedCode = await _redisDb.StringGetAsync($"RegistrationCode:{request.Email}");
+        if (student == null)
+        {
+            parent = await context.Parents.FirstOrDefaultAsync(t => t.Email == request.Email, cancellationToken);
+            if (parent == null)
+            {
+                return Result.Failure("User not found.");
+            }
+        }
+
+        string storedCode = await _redisDb.StringGetAsync($"RegistrationCode:{request.Email}");
         if (storedCode == null || storedCode != request.RegistrationCode)
             return Result.Failure("Invalid or expired registration code.");
 
-        // Update student's status to active
-        student.IsVerified = true;
-        student.UserStatus = Status.Active;
-        student.UserStatusDes = Status.Active.ToString();
-
-        IdentityResult result = await _userManager.UpdateAsync(student);
-        if (!result.Succeeded)
+        if (student != null) // Check if student is not null
         {
-            string errors = string.Join("\n", result.Errors.Select(e => e.Description));
-            return Result.Failure("Failed to confirm registration!\n" + errors);
+            student.IsVerified = true;
+            student.UserStatus = Status.Active;
+            student.UserStatusDes = Status.Active.ToString();
+
+            context.Students.Update(student);
         }
+        else if (parent != null) // Now handle the parent update
+        {
+            parent.IsVerified = true;
+            parent.UserStatus = Status.Active;
+            parent.UserStatusDes = Status.Active.ToString();
+
+            context.Parents.Update(parent);
+        }
+
+
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success("Registration confirmed successfully!");
     }

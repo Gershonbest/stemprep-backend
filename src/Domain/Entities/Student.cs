@@ -1,13 +1,13 @@
 ﻿using Domain.Common.Entities;
 
 namespace Domain.Entities;
-public class User : BaseUser
+public class Student : BaseUser
 {
-    public bool IsVerified { get; set; }
-    
+
     public int? ProgrammeId { get; set; }
 
     public int StudentNumber { get; set; }
+    public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
     public ICollection<Course>? EnrolledCourses { get; set; }
 
 }

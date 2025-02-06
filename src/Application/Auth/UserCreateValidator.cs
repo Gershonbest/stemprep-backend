@@ -1,12 +1,9 @@
-
 using System.Text.RegularExpressions;
-using Application.Auth.Commands;
-using Domain.Enum;
 using FluentValidation;
 
 namespace Application.Auth
 {
-    public class UserCreateValidator : AbstractValidator<RegisterStudentCommand>
+    public class UserCreateValidator : AbstractValidator<IUserValidator>
     {
         public UserCreateValidator()
         {
@@ -36,5 +33,5 @@ namespace Application.Auth
         }
     }
 
-    
+
 }

@@ -3,7 +3,6 @@ using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Application.Common.Models;
 using Application.Interfaces;
-using Domain.Common.Enum;
 using Infrastructure.Templates;
 
 namespace Infrastructure.Services

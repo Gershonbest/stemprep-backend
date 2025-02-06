@@ -5,8 +5,10 @@ using Application;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Serilog;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
+using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration.GetSection("Jwt");
@@ -101,15 +103,29 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 builder.Services.AddAuthorization();
-
 var app = builder.Build();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Log.Error($"An error occurred while applying migrations: {ex.Message}");
+    }
+}
 
 // Configure the HTTP request pipeline.
 
 app.UseSwagger(); // Make Swagger available in all environments
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Talent Portal V1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Stem Prep V1");
     if (!app.Environment.IsDevelopment())
     {
         c.RoutePrefix = "swagger"; // Adjust if needed for non-development environments

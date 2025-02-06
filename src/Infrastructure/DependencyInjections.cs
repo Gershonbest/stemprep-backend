@@ -4,8 +4,6 @@ using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Domain.Entities;
 
 namespace Infrastructure
 {
@@ -15,23 +13,18 @@ namespace Infrastructure
         {
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                   options.UseNpgsql(configuration.GetConnectionString("defaultConnection")));
+                   options.UseNpgsql(configuration.GetConnectionString("postgresConnection")));
 
             services.AddSingleton<IEmailService>(provider =>
             {
                 return new EmailService(configuration);
             });
-            
             services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 
-            // Register Identity
-            services.AddIdentityCore<User>()
-                    .AddRoles<IdentityRole>()
-                    .AddEntityFrameworkStores<ApplicationDbContext>()
-                    .AddApiEndpoints();
-            
+            services.AddHttpContextAccessor();
+
             var accesskey = configuration["Jwt:AccessKey"];
-            var refreshkey =configuration["Jwt:RefreshKey"];
+            var refreshkey = configuration["Jwt:RefreshKey"];
             var issuer = configuration["Jwt:Issuer"];
             var audience = configuration["Jwt:Audience"];
 

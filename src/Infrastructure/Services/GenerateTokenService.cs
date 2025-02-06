@@ -23,7 +23,7 @@ namespace Infrastructure.Services
         }  
         
 
-        public TokenResponse GenerateTokens(string userId, string email, string role)  
+        public TokenResponse GenerateTokens(string userName, string email, string role)  
         {  
             var tokenHandler = new JwtSecurityTokenHandler();  
             var key = Encoding.ASCII.GetBytes(_key);  
@@ -34,7 +34,7 @@ namespace Infrastructure.Services
             {  
                 Subject = new ClaimsIdentity(new[]  
                 {  
-                    new Claim(ClaimTypes.NameIdentifier, userId),  
+                    new Claim(ClaimTypes.NameIdentifier, userName),  
                     new Claim(ClaimTypes.Email, email),  
                     new Claim(ClaimTypes.Role, role)  
                 }),  
@@ -48,11 +48,13 @@ namespace Infrastructure.Services
 
             // Generate Refresh Token (valid for 1 day)  
             var refreshTokenDescriptor = new SecurityTokenDescriptor  
-            {  
-                Subject = new ClaimsIdentity(new[]  
-                {  
-                    new Claim(ClaimTypes.NameIdentifier, userId)  
-                }),  
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, userName),
+                    new Claim(ClaimTypes.Email, email),
+                    new Claim(ClaimTypes.Role, role)
+                }),
                 Expires = DateTime.UtcNow.AddDays(1), // Refresh token expires in 1 day  
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(refreshKey), SecurityAlgorithms.HmacSha256Signature)  
             };  

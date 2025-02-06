@@ -1,7 +1,10 @@
 using Application.Common.Models;
+using Application.Interfaces;
 using Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 
 namespace Application.Auth.Commands;
@@ -12,20 +15,14 @@ public class VerifyForgotPasswordCodeCommand : IRequest<Result>
     public string PasswordResetCode { get; set; }
 }
 
-public class VerifyForgotPasswordCodeCommandHandler : IRequestHandler<VerifyForgotPasswordCodeCommand, Result>
+public class VerifyForgotPasswordCodeCommandHandler(IApplicationDbContext context, IConnectionMultiplexer redis) : IRequestHandler<VerifyForgotPasswordCodeCommand, Result>
 {
-    private readonly UserManager<User> _userManager;
-    private readonly IDatabase _redisDb;
-
-    public VerifyForgotPasswordCodeCommandHandler(UserManager<User> userManager, IConnectionMultiplexer redis)
-    {
-        _userManager = userManager;
-        _redisDb = redis.GetDatabase();
-    }
+    private readonly IDatabase _redisDb = redis.GetDatabase();
 
     public async Task<Result> Handle(VerifyForgotPasswordCodeCommand request, CancellationToken cancellationToken)
     {
-        User? user = await _userManager.FindByEmailAsync(request.Email);
+        Student user = await context.Students.Where(s=> s.Email == request.Email).FirstOrDefaultAsync(cancellationToken);
+
         if (user == null)
         {
             return Result.Failure<VerifyForgotPasswordCodeCommand>("Invalid email.");
