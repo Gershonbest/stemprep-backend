@@ -44,6 +44,12 @@ namespace API.Controllers
             return Ok(await mediator.Send(command));
         }
 
+        [HttpPost("resend-code")]
+        public async Task<IActionResult> ResendCode(ResendConfirmationCodeCommand command)
+        {
+            return Ok(await mediator.Send(command));
+        }
+
         //[HttpPost("login")]  
         //public async Task<IActionResult> Login(LoginUserCommand command)
         //{
