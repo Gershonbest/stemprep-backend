@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Infrastructure.Services;
 
-public class SecretHasherService : ISecretHasherService // Rename interface to represent PIN handling if needed.  
+public class SecretHasherService : ISecretHasherService
 {
     public string Hash(string pin)
     {

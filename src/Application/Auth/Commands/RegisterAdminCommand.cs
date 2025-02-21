@@ -20,7 +20,7 @@
 
 //public class RegisterAdminCommandHandler : IRequestHandler<RegisterAdminCommand, Result>
 //{
-//    private readonly IEmailService _emailSender;
+//    private readonly IEmailService _emailService;
 //    private readonly UserManager<Student> _userManager;
 //    private readonly RoleManager<IdentityRole> _roleManager;
 //    private readonly IDatabase _redisDb;
@@ -33,7 +33,7 @@
 //        IConnectionMultiplexer redis,
 //        IApplicationDbContext context) 
 //    {
-//        _emailSender = emailSender;
+//        _emailService = emailSender;
 //        _userManager = userManager;
 //        _roleManager = roleManager;
 //        _redisDb = redis.GetDatabase();

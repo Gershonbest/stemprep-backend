@@ -20,6 +20,8 @@ namespace Infrastructure
                 return new EmailService(configuration);
             });
             services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+            services.AddScoped<ISecretHasherService, SecretHasherService>();
+            services.AddSingleton<ICloudinaryService, CloudinaryService>();
 
             services.AddHttpContextAccessor();
 
