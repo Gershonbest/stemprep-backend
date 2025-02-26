@@ -22,13 +22,13 @@ namespace API.Controllers
             return Ok(await mediator.Send(command));
         }
 
-        [HttpPost("Tutor/register")]
-        public async Task<IActionResult> RegisterTutor([FromForm]RegisterTutorCommand command)
+        [HttpPost("tutor/register")]
+        public async Task<IActionResult> RegisterTutor(RegisterTutorCommand command)
         {
             return Ok(await mediator.Send(command));
         }
 
-        [HttpPost("Tutor/additionaldetails")]
+        [HttpPost("tutor/additionaldetails")]
         public async Task<IActionResult> AdditionalDetails([FromForm] AddAdditionalTutorDetailsCommand command)
         {
             return Ok(await mediator.Send(command));
@@ -46,7 +46,7 @@ namespace API.Controllers
         //    return Ok(await _mediator.Send(command));
         //}
 
-        [HttpPost("confirm-registration")]
+        [HttpPost("confirmregistration")]
         public async Task<IActionResult> ConfirmRegistration(VerifyEmailCommand command)
         {
             return Ok(await mediator.Send(command));

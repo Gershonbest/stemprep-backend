@@ -24,7 +24,7 @@ namespace API.Controllers
         }
 
         [HttpPost("Image")]
-        public async Task<IActionResult> UploadImage(UploadImageCommand request)
+        public async Task<IActionResult> UploadImage([FromForm]UploadImageCommand request)
         {
             return Ok(await mediator.Send(request));
         }
