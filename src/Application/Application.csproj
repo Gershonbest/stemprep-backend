@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="AutoMapper\**" />
+	  <Compile Remove="LearningAdmins\**" />
+	  <EmbeddedResource Remove="AutoMapper\**" />
+	  <EmbeddedResource Remove="LearningAdmins\**" />
+	  <None Remove="AutoMapper\**" />
+	  <None Remove="LearningAdmins\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Domain\Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="13.0.1" />
+		<PackageReference Include="CloudinaryDotNet" Version="1.27.4" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.2" />
+		<PackageReference Include="MediatR" Version="12.4.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+		<PackageReference Include="Microsoft.AspNet.Mvc" Version="5.3.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+		<PackageReference Include="MySqlConnector" Version="2.3.7" />
+		<PackageReference Include="Npgsql" Version="9.0.1" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
+		<PackageReference Include="Serilog" Version="4.1.0" />
+		<PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+		<PackageReference Include="StackExchange.Redis" Version="2.8.0" />
+
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Auth\Queries\" />
+	  <Folder Include="Common\Interfaces\" />
+	  <Folder Include="Parents\Command\" />
+	</ItemGroup>
+	
+
+</Project>
