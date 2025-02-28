@@ -11,12 +11,15 @@ namespace Application.Documents.Queries
         public Guid UserId { get; set; }
     }
 
-    public class GetDocumentsbyUserCommandHandler(
+    public class GetDocumentsByUserCommandHandler(
         IApplicationDbContext context) : IRequestHandler<GetDocumentsByUserCommand, Result>
     {
-
         public async Task<Result> Handle(GetDocumentsByUserCommand request, CancellationToken cancellationToken)
         {
+            if (request.UserId == Guid.Empty)
+            {
+                return Result.Failure("Invalid user id");
+            }
             var documents = await context.Documents
                             .Select(d => new DocumentDto
                             {
@@ -24,7 +27,7 @@ namespace Application.Documents.Queries
                                 CloudinaryUrl = d.CloudinaryUrl,
                                 FileName = d.FileName,
                                 FileType = d.FileType,
-                                UserId = d.UserGuId,
+                                UserId = d.UserGuid,
                             })
                             .ToListAsync(cancellationToken);
             return Result.Success<GetDocumentsByUserCommand>("documents retrieved successfully", documents);

@@ -22,7 +22,6 @@ public class RegisterTutorCommandHandler(
     IEmailService emailService,
     IConnectionMultiplexer redis,
     IApplicationDbContext context,
-    ICloudinaryService cloudinaryService,
     ISecretHasherService secretHasherService) : IRequestHandler<RegisterTutorCommand, Result>
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
@@ -47,6 +46,10 @@ public class RegisterTutorCommandHandler(
             UserType = UserType.Tutor,
             UserTypeDesc = UserType.Tutor.ToString(),
             IsVerified = true,
+            AccountStatus = TutorAccountStatus.Pending,
+            AccountStatusDesc = TutorAccountStatus.Pending.ToString(),
+            AvailabilityStatus = AvailabilityStatus.Available,
+            AvailabilityStatusDesc = AvailabilityStatus.Available.ToString(),
             UserStatus = Status.Active,
             UserStatusDes = Status.Active.ToString(),
             LastModifiedDate = DateTime.UtcNow,

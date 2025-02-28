@@ -21,9 +21,8 @@ namespace Infrastructure.Services
             _audience = audience; 
             
         }  
-        
 
-        public TokenResponse GenerateTokens(string userName, string email, string role)  
+        public TokenResponse GenerateTokens(string userName, string email, string role, Guid guid)  
         {  
             var tokenHandler = new JwtSecurityTokenHandler();  
             var key = Encoding.ASCII.GetBytes(_key);  
@@ -34,11 +33,12 @@ namespace Infrastructure.Services
             {  
                 Subject = new ClaimsIdentity(new[]  
                 {  
-                    new Claim(ClaimTypes.NameIdentifier, userName),  
+                    new Claim(ClaimTypes.NameIdentifier, guid.ToString()),  
                     new Claim(ClaimTypes.Email, email),  
-                    new Claim(ClaimTypes.Role, role)  
+                    new Claim(ClaimTypes.Role, role),
+                    new Claim(ClaimTypes.Name, userName)
                 }),  
-                Expires = DateTime.UtcNow.AddMinutes(30), // Access token expires in 30 minutes  
+                Expires = DateTime.UtcNow.AddHours(2), // Access token expires in 2Hrs 
                 Issuer = _issuer,  
                 Audience = _audience,  
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)  
@@ -51,9 +51,10 @@ namespace Infrastructure.Services
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, userName),
+                    new Claim(ClaimTypes.NameIdentifier, guid.ToString()),
                     new Claim(ClaimTypes.Email, email),
-                    new Claim(ClaimTypes.Role, role)
+                    new Claim(ClaimTypes.Role, role),
+                    new Claim(ClaimTypes.Name, userName)
                 }),
                 Expires = DateTime.UtcNow.AddDays(1), // Refresh token expires in 1 day  
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(refreshKey), SecurityAlgorithms.HmacSha256Signature)  
@@ -78,9 +79,9 @@ namespace Infrastructure.Services
             }  
 
             return emailClaim;  
-        }  
+        }
 
-        public string GetIdFromToken(ClaimsPrincipal user)  
+        public string GetOwnerIdFromToken(ClaimsPrincipal user)  
         {  
             var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;  
             if (idClaim == null)  

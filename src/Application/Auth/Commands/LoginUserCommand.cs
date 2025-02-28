@@ -4,7 +4,6 @@ using Application.Common.Models;
 using Application.Interfaces;
 using MediatR;
 using StackExchange.Redis;
-using Domain.Enum;
 using Microsoft.AspNetCore.Http;
 using Domain.Common.Entities;
 
@@ -20,7 +19,8 @@ public class StudentLoginCommandHandler(IApplicationDbContext context,
                                   ITokenGenerator generateToken,
                                   IEmailService emailService,
                                   IConnectionMultiplexer redis,
-                                  IHttpContextAccessor httpContextAccessor) : IRequestHandler<LoginUserCommand, Result>
+                                  IHttpContextAccessor httpContextAccessor,
+                                  ISecretHasherService secretHasherService) : IRequestHandler<LoginUserCommand, Result>
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
 
@@ -39,7 +39,7 @@ public class StudentLoginCommandHandler(IApplicationDbContext context,
             string confirmationCode = GenerateCode.GenerateRegistrationCode();
 
             // Store the confirmation code in Redis with an expiration of 2 hours
-            await _redisDb.StringSetAsync($"ConfirmationCode:{request.Email}", confirmationCode, TimeSpan.FromHours(2));
+            await _redisDb.StringSetAsync($"RegistrationCode:{request.Email}", confirmationCode, TimeSpan.FromHours(2));
 
             // Send the confirmation code to the user's email
             await emailService.SendAccountConfirmationCodeAsync(user.Email!, confirmationCode);
@@ -47,12 +47,13 @@ public class StudentLoginCommandHandler(IApplicationDbContext context,
             return Result.Failure<LoginUserCommand>($"User {request.Email} account is not verified. A new confirmation code has been sent.");
         }
 
-        if (user.PasswordHash != request.Password)
+        string hashedPassword = secretHasherService.Hash(request.Password);
+        if (user.PasswordHash != hashedPassword)
         {
             return Result.Failure<LoginUserCommand>("Invalid Email or Password");
         }
 
-        var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString());
+        var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString(), user.Guid);
 
         CookieHelper.SetTokensInCookies(httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
 

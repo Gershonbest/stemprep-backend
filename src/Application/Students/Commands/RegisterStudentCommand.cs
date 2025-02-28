@@ -1,18 +1,21 @@
-﻿using Application.Common.Models;
+﻿using Application.Auth;
+using Application.Common.Models;
 using Application.Extensions;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Enum;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
-namespace Application.Auth.Commands;
+namespace Application.Students.Commands;
 
 public class RegisterStudentCommand : IRequest<Result>, IChildValidator
 {
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Username { get; set; }
+    [JsonIgnore]
     public Guid ParentGuid { get; set; }
     public string Password { get; set; }
     public string Gender { get; set; }
@@ -38,9 +41,9 @@ public class RegisterStudentCommandHandler(
         if (parent is null)
             return Result.Failure("Parent not found");
 
-        var childExists = await new AuthHelper(context).CheckIfChildExists(request.Username, request.ParentGuid);
+        var childExists = await new AuthHelper(context).CheckIfChildExists(request.Username);
         if (childExists)
-            return Result.Failure($"A child with {request.Username} already exists");
+            return Result.Failure($"{request.Username} already exists");
 
         // Create the student entity
         Student student = new()
@@ -53,8 +56,8 @@ public class RegisterStudentCommandHandler(
             UserType = UserType.Student,
             UserTypeDesc = UserType.Student.ToString(),
             IsVerified = false,
-            UserStatus = Status.Inactive,
-            UserStatusDes = Status.Inactive.ToString(),
+            UserStatus = Status.Active,
+            UserStatusDes = Status.Active.ToString(),
             LastModifiedDate = DateTime.UtcNow,
             Gender = request.Gender,
             State = request.State,
@@ -63,8 +66,8 @@ public class RegisterStudentCommandHandler(
 
         parent.Children.Add(student);
 
-        context.Students.Add(student);
         context.Parents.Update(parent);
+        await context.SaveChangesAsync(cancellationToken);
         return Result.Success<RegisterStudentCommand>("Student added successfully");
     }
 }

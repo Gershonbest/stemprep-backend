@@ -22,7 +22,8 @@ public class RegisterParentCommand : IRequest<Result>, IUserValidator
 public class RegisterParentCommandHandler(
     IEmailService emailSender,
     IConnectionMultiplexer redis,
-    IApplicationDbContext context) : IRequestHandler<RegisterParentCommand, Result>
+    IApplicationDbContext context,
+    ISecretHasherService secretHasherService) : IRequestHandler<RegisterParentCommand, Result>
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
 
@@ -44,8 +45,9 @@ public class RegisterParentCommandHandler(
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            UserType = UserType.Student,
-            UserTypeDesc = UserType.Student.ToString(),
+            PasswordHash = secretHasherService.Hash(request.Password),
+            UserType = UserType.Parent,
+            UserTypeDesc = UserType.Parent.ToString(),
             IsVerified = false,
             UserStatus = Status.Inactive,
             UserStatusDes = Status.Inactive.ToString(),

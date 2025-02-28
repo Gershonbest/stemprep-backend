@@ -5,18 +5,20 @@ using Microsoft.AspNetCore.Http;
 using Serilog;
 using Domain.Entities;
 using Application.Auth;
+using System.Text.Json.Serialization;
 
 namespace Application.Documents.Commands
 {
-    public class UploadImageCommand : IRequest<Result>
+    public class UploadDocumentCommand : IRequest<Result>
     {
-        public IFormFile ModuleImage { get; set; }
+        public IFormFile Document { get; set; }
+        [JsonIgnore]
         public Guid UserGuid { get; set; }
     }
 
-    public class UploadImageCommandHandler(IApplicationDbContext context, ICloudinaryService cloudinaryService) : IRequestHandler<UploadImageCommand, Result>
+    public class UploadDocumentCommandHandler(IApplicationDbContext context, ICloudinaryService cloudinaryService) : IRequestHandler<UploadDocumentCommand, Result>
     {
-        public async Task<Result> Handle(UploadImageCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
         {
             var user = await new AuthHelper(context).GetUserByGuid(request.UserGuid);
             if (user == null)
@@ -25,17 +27,16 @@ namespace Application.Documents.Commands
             }
 
             // Upload the image to Cloudinary
-            var result = await cloudinaryService.UploadImageAsync(request.ModuleImage);
+            var result = await cloudinaryService.UploadFileAsync(request.Document);
             if (result.Succeeded)
             {
-                Log.Information($"Document {request.ModuleImage.FileName} uploaded successfully to Cloudinary. URL: {result.Entity}");
+                Log.Information($"Document {request.Document.FileName} uploaded successfully to Cloudinary. URL: {result.Entity}");
                 // Create and save Document entity
                 var image = new Document()
                 {
-                    Guid = Guid.NewGuid(),
                     CloudinaryUrl = result.Entity as string,
-                    FileName = request.ModuleImage.FileName,
-                    FileType = Path.GetExtension(request.ModuleImage.FileName).ToLowerInvariant(),
+                    FileName = request.Document.FileName,
+                    FileType = Path.GetExtension(request.Document.FileName).ToLowerInvariant(),
                     UserGuid = request.UserGuid,
                     UserType = user.UserType,
                     UserTypeDesc = user.UserType.ToString()
@@ -44,13 +45,14 @@ namespace Application.Documents.Commands
             }
             else
             {
-                return Result.Failure($"Document upload failed for {request.ModuleImage.FileName}. {result.Error}");
+                return Result.Failure($"Document upload failed for {request.Document.FileName}. {result.Error}");
             }
 
             await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success<UploadImageCommand>("image uploaded successfully!");
+            return Result.Success<UploadDocumentCommand>("image uploaded successfully!");
         }
     }
 
 }
+

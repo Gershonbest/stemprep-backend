@@ -8,7 +8,7 @@ namespace Domain.Entities
         public string CloudinaryUrl { get; set; }
         public string FileName { get; set; }
         public string FileType { get; set; } 
-        public Guid UserGuId { get; set; }
+        public Guid UserGuid { get; set; }
         public UserType UserType { get; set; }
         public string UserTypeDesc { get; set; }
     }
