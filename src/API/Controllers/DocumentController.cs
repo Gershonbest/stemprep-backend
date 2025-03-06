@@ -34,6 +34,13 @@ namespace API.Controllers
             return Ok(await mediator.Send(request));
         }
 
+        [Authorize]
+        [HttpPost("editimage")]
+        public async Task<IActionResult> EditImage([FromForm] EditImageCommand request)
+        {
+            return Ok(await mediator.Send(request));
+        }
+
         [Authorize(Roles = "Tutor")]
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromForm] UploadDocumentCommand command)
@@ -43,12 +50,12 @@ namespace API.Controllers
             return Ok(await mediator.Send(command));
         }
 
-        [Authorize(Roles = "Tutor")]
+        [Authorize]
         [HttpPost("Delete")]
-        public async Task<IActionResult> Delete([FromBody] DeleteDocumentCommand command)
+        public async Task<IActionResult> Delete([FromForm] DeleteDocumentCommand command)
         {
-            Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid tutorGuid);
-            command.UserGuid = tutorGuid;
+            Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid userGuid);
+            command.UserGuid = userGuid;
             return Ok(await mediator.Send(command));
         }
     }

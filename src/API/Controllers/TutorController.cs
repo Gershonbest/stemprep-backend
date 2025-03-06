@@ -10,8 +10,8 @@ namespace API.Controllers
     public class TutorController(IMediator mediator, ITokenGenerator tokenGenerator) : ControllerBase
     {
         [Authorize]
-        [HttpGet("info")]
-        public async Task<IActionResult> GetInfo([FromBody] GetTutorInfoCommand command)
+        [HttpGet("dashboardinfo")]
+        public async Task<IActionResult> GetInfo([FromQuery] GetTutorInfoCommand command)
         {
             Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid TutorGuid);
             command.TutorGuid = TutorGuid;

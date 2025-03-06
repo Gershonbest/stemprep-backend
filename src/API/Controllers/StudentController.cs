@@ -22,7 +22,7 @@ namespace API.Controllers
         }
 
         [Authorize(Roles = "Parent")]
-        [HttpPost("add")]
+        [HttpPost("register")]
         public async Task<IActionResult> AddStudent([FromBody] RegisterStudentCommand command)
         {
             Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid parentGuid);

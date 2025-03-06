@@ -1,5 +1,9 @@
+using AutoMapper;
+using Domain.Entities;
+
 namespace Application.Dto
 {
+    [AutoMap(typeof(Student))]
     public class StudentDto
     {
         public string Id { get; set; }

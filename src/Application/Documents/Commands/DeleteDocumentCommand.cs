@@ -14,7 +14,7 @@ namespace Application.Documents.Commands
         public Guid UserGuid { get; set; }
     }
 
-    public class DeleteDocumentCommandHandler(IApplicationDbContext context) : IRequestHandler<DeleteDocumentCommand, Result>
+    public class DeleteDocumentCommandHandler(IApplicationDbContext context, ICloudinaryService cloudinaryService) : IRequestHandler<DeleteDocumentCommand, Result>
     {
         public async Task<Result> Handle(DeleteDocumentCommand request, CancellationToken cancellationToken)
         {
@@ -32,9 +32,14 @@ namespace Application.Documents.Commands
             }
 
             context.Documents.Remove(document);
-            await context.SaveChangesAsync(cancellationToken);
+            var result = await cloudinaryService.DeleteFileAsync(document.CloudinaryUrl);
 
-            return Result.Success<DeleteDocumentCommand>("Document deleted successfully!");
+            if (result.Succeeded)
+            {
+                await context.SaveChangesAsync(cancellationToken);
+            }
+
+            return result;
         }
     }
 
