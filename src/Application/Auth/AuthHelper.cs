@@ -1,11 +1,11 @@
 ﻿using Application.Interfaces;
 using Domain.Common.Entities;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Application.Auth
 {
-    internal class AuthHelper(IApplicationDbContext context)
+    internal class AuthHelper(IApplicationDbContext context) 
     {
         public async Task<bool> CheckIfUserExists(string email)
         {
@@ -21,12 +21,28 @@ namespace Application.Auth
 
             return childExists;
         }
-        public async Task<BaseUser> GetUserByEmail(string email)
+        public async Task<BaseUser> GetBaseUserByEmail(string email)
         {
             BaseUser user = await context.Parents.FirstOrDefaultAsync(p => p.Email == email) as BaseUser ??
                              await context.Tutors.FirstOrDefaultAsync(t => t.Email == email) as BaseUser ??
                              await context.Students.FirstOrDefaultAsync(s => s.Email == email) as BaseUser;
             return user;
+        }
+        public async Task<T> GetUserByEmail<T>(string email) where T : BaseUser
+        {
+            if (typeof(T) == typeof(Parent))
+            {
+                return await context.Parents.FirstOrDefaultAsync(p => p.Email == email) as T;
+            }
+            else if (typeof(T) == typeof(Tutor))
+            {
+                return await context.Tutors.FirstOrDefaultAsync(t => t.Email == email) as T;
+            }
+            else if (typeof(T) == typeof(Admin))
+            {
+                return await context.Admins.FirstOrDefaultAsync(a => a.Email == email) as T;
+            }
+            else return null;
         }
         public async Task<BaseUser> GetUserByGuid(Guid userGuid)
         {

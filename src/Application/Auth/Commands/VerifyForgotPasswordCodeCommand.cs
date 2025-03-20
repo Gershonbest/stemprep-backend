@@ -21,7 +21,7 @@ public class VerifyForgotPasswordCodeCommandHandler(IApplicationDbContext contex
 
     public async Task<Result> Handle(VerifyForgotPasswordCodeCommand request, CancellationToken cancellationToken)
     {
-        BaseUser user = await new AuthHelper(context).GetUserByEmail(request.Email);
+        BaseUser user = await new AuthHelper(context).GetBaseUserByEmail(request.Email);
 
         if (user == null)
         {
