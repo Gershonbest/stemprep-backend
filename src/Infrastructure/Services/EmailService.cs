@@ -62,6 +62,26 @@ namespace Infrastructure.Services
             return await SendEmail(toEmail, mailMessage);
         }
 
+        public async Task<Result> SendPasswordResetEmailAsync(string toEmail, string link)
+        {
+            string subject = "Password Reset Verification Code";
+            string formattedBody = $@"
+                                    <p>Hello!</p>
+                                    <p>Click the link below to reset your password:</p>
+                                    <a href=""{link}"" class=""code"">Reset Password</a>
+                                    <p>Verification codes will expire soon.</p> 
+                                    <p>You can safely ignore this if you did not request to reset your password.</p>
+                                    ";
+            string formattedHtml = ReplaceTemplateVariables(subject, formattedBody);
+
+            MailMessage mailMessage = new(_fromEmail, toEmail, subject, formattedHtml)
+            {
+                IsBodyHtml = true
+            };
+
+            return await SendEmail(toEmail, mailMessage);
+        }
+
         public async Task<Result> SendRegistrationConfirmationEmailAsync(string toEmail, string name, string code)
         {
             string subject = "Registration Confirmation Code";

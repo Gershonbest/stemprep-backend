@@ -14,10 +14,17 @@ namespace Application.Auth
                               await context.Admins.AnyAsync(a => a.Email == email);
             return userExists;
         }
-        public async Task<bool> CheckIfChildExists(string username)
+        public async Task<bool> CheckIfStudentExists(string username)
         {
             bool childExists = await context.Students
                                     .AnyAsync(p => p.Username == username);
+
+            return childExists;
+        }
+        public async Task<Student> GetStudentByUsername(string username)
+        {
+            Student childExists = await context.Students
+                                    .FirstOrDefaultAsync(p => p.Username == username);
 
             return childExists;
         }

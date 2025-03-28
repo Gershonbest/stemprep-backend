@@ -41,7 +41,7 @@ public class RegisterStudentCommandHandler(
         if (parent is null)
             return Result.Failure("Parent not found");
 
-        var childExists = await new AuthHelper(context).CheckIfChildExists(request.Username);
+        var childExists = await new AuthHelper(context).CheckIfStudentExists(request.Username);
         if (childExists)
             return Result.Failure($"{request.Username} already exists");
 
