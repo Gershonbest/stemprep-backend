@@ -32,7 +32,7 @@ public class RegisterTutorCommandHandler(
         await request.ValidateAsync(new UserCreateValidator(), cancellationToken);
         #endregion
 
-        bool userExists = await new AuthHelper(context).CheckIfUserExists(request.Email);
+        bool userExists = await new AuthHelper(context).GlobalCheckIfUserExists(request.Email);
         if (userExists)
         {
             return Result.Failure("User already exists. Please login or use a different email address.");

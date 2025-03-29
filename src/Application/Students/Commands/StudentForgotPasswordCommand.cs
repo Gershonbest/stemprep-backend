@@ -39,7 +39,7 @@ namespace Application.Students.Commands
             string resetToken = Guid.NewGuid().ToString();
 
             string baseUrl = configuration["Url:StudentForgotPasswordUrl"];
-            var resetLink = $"{baseUrl}/reset-password?token={resetToken}&username={request.Username}";
+            var resetLink = $"{baseUrl}/?token={resetToken}&username={request.Username}";
 
             string redisKey = configuration["Redis:StudentResetPassword"];
             await _redisDb.StringSetAsync(redisKey + request.Username, resetToken, TimeSpan.FromMinutes(15));

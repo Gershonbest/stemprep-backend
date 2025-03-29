@@ -29,7 +29,7 @@ public class GetConfirmationCodeCommandHandler(
 
         Tutor tutor = await context.Tutors.Where(t => t.Email == request.Email).FirstOrDefaultAsync(CancellationToken.None);
 
-        bool userExists = await new AuthHelper(context).CheckIfUserExists(request.Email);
+        bool userExists = await new AuthHelper(context).GlobalCheckIfUserExists(request.Email);
         if (tutor == null)
         {
             return Result.Failure("Tutor does not exist");

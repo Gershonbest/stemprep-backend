@@ -11,7 +11,7 @@ namespace Application.Interfaces
         public DbSet<Tutor> Tutors { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Document> Documents { get; set; }
-
+        DbSet<T> Set<T>() where T : class;
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

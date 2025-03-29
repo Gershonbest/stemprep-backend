@@ -35,6 +35,13 @@ public class LoginUserCommandHandler<TUser>(IApplicationDbContext context,
             return Result.Failure<LoginUserCommand<TUser>>("Invalid Email or Password");
         }
 
+        var userType = await new AuthHelper(context).GetUserTypeByEmail(request.Email);
+
+        if (userType != typeof(TUser))
+        {
+            return Result.Failure<LoginUserCommand<TUser>>($"User is registered as a {userType.Name}");
+        }
+
         if (!user.IsVerified)
         {
             // Generate and send a new confirmation code

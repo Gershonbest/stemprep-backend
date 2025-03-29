@@ -7,7 +7,29 @@ namespace Application.Auth
 {
     internal class AuthHelper(IApplicationDbContext context) 
     {
-        public async Task<bool> CheckIfUserExists(string email)
+        public async Task<bool> GlobalCheckIfUserExists(string email)
+        {
+            bool userExists = await context.Parents.AnyAsync(p => p.Email == email) ||
+                              await context.Tutors.AnyAsync(t => t.Email == email) ||
+                              await context.Admins.AnyAsync(a => a.Email == email);
+            return userExists;
+        }
+
+        public async Task<Type> GetUserTypeByEmail(string email)
+        {
+            if (await context.Parents.AnyAsync(p => p.Email == email))
+                return typeof(Parent);
+
+            if (await context.Tutors.AnyAsync(t => t.Email == email))
+                return typeof(Tutor);
+
+            if (await context.Admins.AnyAsync(a => a.Email == email))
+                return typeof(Admin);
+
+            return null;
+        }
+
+        public async Task<bool> CheckIfUserExists<T>(string email)
         {
             bool userExists = await context.Parents.AnyAsync(p => p.Email == email) ||
                               await context.Tutors.AnyAsync(t => t.Email == email) ||

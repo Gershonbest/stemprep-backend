@@ -20,19 +20,19 @@ namespace Application.Students.Commands
 
         public async Task<Result> Handle(StudentResetPasswordCommand request, CancellationToken cancellationToken)
         {
-            // Retrieve the stored token from Redis
-            string redisKey = configuration["Redis:StudentResetPassword"];
-            var storedToken = await _redisDb.StringGetAsync(redisKey + request.Username);
-                if (storedToken.IsNullOrEmpty || storedToken.ToString() != request.Token)
-            {
-                return Result.Failure("Invalid or expired reset token");
-            }
-
             // Find the student and update the password
             var student = await context.Students.FirstOrDefaultAsync(c => c.Username == request.Username, cancellationToken);
             if (student == null)
             {
                 return Result.Failure("User not found");
+            }
+
+            // Retrieve the stored token from Redis
+            string redisKey = configuration["Redis:StudentResetPassword"];
+            var storedToken = await _redisDb.StringGetAsync(redisKey + request.Username);
+            if (storedToken.IsNullOrEmpty || storedToken.ToString() != request.Token)
+            {
+                return Result.Failure("Invalid or expired reset token");
             }
 
             student.PasswordHash = secretHasherService.Hash(request.NewPassword);

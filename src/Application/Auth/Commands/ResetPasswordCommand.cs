@@ -37,9 +37,9 @@ namespace Application.Auth.Commands
             }
 
             user.PasswordHash = secretHasherService.Hash(request.NewPassword);
-
+            await context.SaveChangesAsync(cancellationToken);
             // Success response
-            return Result.Success("Password reset successfully.");
+            return Result.Success<ResetPasswordCommand>("Password reset successfully.");
         }
     }
 }
