@@ -21,6 +21,7 @@ namespace Infrastructure
             });
             services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
             services.AddScoped<ISecretHasherService, SecretHasherService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             services.AddSingleton<ICloudinaryService, CloudinaryService>();
 
             services.AddHttpContextAccessor();

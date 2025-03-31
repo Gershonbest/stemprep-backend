@@ -65,6 +65,6 @@ public class RegisterParentCommandHandler(
         await emailSender.SendRegistrationConfirmationEmailAsync(parent.Email, parent.FirstName, registrationCode);
 
 
-        return Result.Success<RegisterParentCommand>("Registration code sent successfully! Please confirm your registration.", parent);
+        return Result.Success<RegisterParentCommand>("Registration code sent successfully! Please confirm your registration.");
     }
 }

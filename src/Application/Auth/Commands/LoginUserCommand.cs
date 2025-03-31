@@ -21,7 +21,8 @@ public class LoginUserCommandHandler<TUser>(IApplicationDbContext context,
                                   IEmailService emailService,
                                   IConnectionMultiplexer redis,
                                   IHttpContextAccessor httpContextAccessor,
-                                  ISecretHasherService secretHasherService) : IRequestHandler<LoginUserCommand<TUser>, Result>
+                                  ISecretHasherService secretHasherService,
+                                  IRefreshTokenService refreshTokenService) : IRequestHandler<LoginUserCommand<TUser>, Result>
     where TUser : BaseUser
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
@@ -65,6 +66,12 @@ public class LoginUserCommandHandler<TUser>(IApplicationDbContext context,
         var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString(), user.Guid);
 
         CookieHelper.SetTokensInCookies(httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
+
+        await refreshTokenService.AddRefreshTokenAsync<TUser>(new RefreshToken
+        {
+            Token = tokens.RefreshToken,
+            Expires = DateTime.Now.AddDays(30)
+        });
 
         return Result.Success<LoginUserCommand<TUser>>("Successfully logged in", tokens);
     }

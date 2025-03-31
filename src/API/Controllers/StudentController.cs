@@ -12,7 +12,7 @@ namespace API.Controllers
     {
 
         [HttpPost("login")]
-        public async Task<IActionResult> StudentLogin(LoginStudentCommand command)
+        public async Task<IActionResult> StudentLogin([FromBody]LoginStudentCommand command)
         {
 
             var res = await mediator.Send(command);

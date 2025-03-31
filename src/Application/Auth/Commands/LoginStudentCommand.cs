@@ -20,20 +20,20 @@ public class LoginStudentCommandHandler(IApplicationDbContext context,
 {
     public async Task<Result> Handle(LoginStudentCommand request, CancellationToken cancellationToken)
     {
-        Student user = await new AuthHelper(context).GetStudentByUsername(request.UserName);
+        Student Student = await new AuthHelper(context).GetStudentByUsername(request.UserName);
 
-        if (user == null)
+        if (Student == null)
         {
             return Result.Failure<LoginStudentCommand>("Invalid username or Password");
         }
 
         string hashedPassword = secretHasherService.Hash(request.Password);
-        if (user.PasswordHash != hashedPassword)
+        if (Student.PasswordHash != hashedPassword)
         {
             return Result.Failure<LoginStudentCommand>("Invalid username or Password");
         }
 
-        var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString(), user.Guid);
+        var tokens = generateToken.GenerateTokens(Student.FirstName, Student.Username!, Student.UserType.ToString(), Student.Guid);
 
         CookieHelper.SetTokensInCookies(httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
 

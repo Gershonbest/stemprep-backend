@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Domain.Common.Entities;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -12,6 +13,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Tutor> Tutors { get; set; }
     public DbSet<Document> Documents { get; set; }
     public DbSet<Admin> Admins { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

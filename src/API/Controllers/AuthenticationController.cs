@@ -17,6 +17,12 @@ namespace API.Controllers
         //    return Ok(await mediator.Send(command));
         //}
 
+        //[HttpPost("refreshtoken")]
+        //public async Task<IActionResult> RefreshLogin(RefreshLoginCommand command)
+        //{
+        //    return Ok(await mediator.Send(command));
+        //}
+
         [HttpPost("parent/register")]
         public async Task<IActionResult> RegisterParent(RegisterParentCommand command)
         {
