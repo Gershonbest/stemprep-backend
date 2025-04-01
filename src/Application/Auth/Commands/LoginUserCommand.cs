@@ -70,7 +70,7 @@ public class LoginUserCommandHandler<TUser>(IApplicationDbContext context,
         await refreshTokenService.AddRefreshTokenAsync<TUser>(new RefreshToken
         {
             Token = tokens.RefreshToken,
-            Expires = DateTime.Now.AddDays(30)
+            Expires = DateTime.UtcNow.AddDays(30)
         });
 
         return Result.Success<LoginUserCommand<TUser>>("Successfully logged in", tokens);
