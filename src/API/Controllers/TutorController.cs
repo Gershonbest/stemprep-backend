@@ -11,12 +11,14 @@ namespace API.Controllers
     {
         [Authorize]
         [HttpGet("dashboardinfo")]
-        public async Task<IActionResult> GetInfo([FromQuery] GetTutorInfoCommand command)
+        public async Task<IActionResult> GetInfo()
         {
-            Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid TutorGuid);
-            command.TutorGuid = TutorGuid;
-            return Ok(await mediator.Send(command));
+            if (Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid TutorGuid))
+            {
+                var command = new GetTutorInfoCommand { TutorGuid = TutorGuid };
+                return Ok(await mediator.Send(command));
+            }
+            return BadRequest("Invalid User ID");
         }
-
     }
 }
