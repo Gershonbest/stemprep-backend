@@ -10,9 +10,9 @@
         public DateTime? RevokedAt { get; set; }
 
         // Foreign key relationship
-        public int TutorId { get; set; }
-        public int ParentId { get; set; }
-        public int AdminId { get; set; }
-        public int StudentId { get; set; }
+        public int? TutorId { get; set; }
+        public int? ParentId { get; set; }
+        public int? AdminId { get; set; }
+        public int? StudentId { get; set; }
     }
 }

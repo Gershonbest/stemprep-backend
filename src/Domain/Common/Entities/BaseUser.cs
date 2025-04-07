@@ -33,7 +33,6 @@ public abstract class BaseUser
     public string Country { get; set; }
     public string State { get; set; }
     public string Province { get; set; }
-    public RefreshToken RefreshToken { get; set; }
-    public int RefreshTokenId { get; set; }
+    public RefreshToken? RefreshToken { get; set; }
 
 }

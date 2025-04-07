@@ -6,7 +6,6 @@ namespace Application.Dto
     [AutoMap(typeof(Tutor))]
     public class TutorDto
     {
-        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string AccountStatusDesc { get; set; }

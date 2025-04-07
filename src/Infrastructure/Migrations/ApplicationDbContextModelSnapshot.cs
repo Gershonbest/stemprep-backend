@@ -31,7 +31,7 @@ namespace Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AdminId")
+                    b.Property<int?>("AdminId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
@@ -43,22 +43,34 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("ParentId")
+                    b.Property<int?>("ParentId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("StudentId")
+                    b.Property<int?>("StudentId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Token")
                         .HasColumnType("text");
 
-                    b.Property<int>("TutorId")
+                    b.Property<int?>("TutorId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AdminId")
+                        .IsUnique();
+
+                    b.HasIndex("ParentId")
+                        .IsUnique();
+
+                    b.HasIndex("StudentId")
+                        .IsUnique();
+
+                    b.HasIndex("TutorId")
+                        .IsUnique();
 
                     b.ToTable("RefreshTokens");
                 });
@@ -119,12 +131,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Province")
                         .HasColumnType("text");
 
-                    b.Property<int>("RefreshTokenId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RefreshTokenId1")
-                        .HasColumnType("integer");
-
                     b.Property<string>("State")
                         .HasColumnType("text");
 
@@ -141,8 +147,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RefreshTokenId1");
 
                     b.ToTable("Admins");
                 });
@@ -294,12 +298,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Province")
                         .HasColumnType("text");
 
-                    b.Property<int>("RefreshTokenId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RefreshTokenId1")
-                        .HasColumnType("integer");
-
                     b.Property<string>("State")
                         .HasColumnType("text");
 
@@ -319,8 +317,6 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
-
-                    b.HasIndex("RefreshTokenId1");
 
                     b.ToTable("Parents");
                 });
@@ -390,12 +386,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Province")
                         .HasColumnType("text");
 
-                    b.Property<int>("RefreshTokenId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RefreshTokenId1")
-                        .HasColumnType("integer");
-
                     b.Property<string>("State")
                         .HasColumnType("text");
 
@@ -423,8 +413,6 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("ParentId");
-
-                    b.HasIndex("RefreshTokenId1");
 
                     b.ToTable("Students");
                 });
@@ -497,12 +485,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Province")
                         .HasColumnType("text");
 
-                    b.Property<int>("RefreshTokenId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RefreshTokenId1")
-                        .HasColumnType("integer");
-
                     b.Property<string>("State")
                         .HasColumnType("text");
 
@@ -523,18 +505,26 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("RefreshTokenId1");
-
                     b.ToTable("Tutors");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Admin", b =>
+            modelBuilder.Entity("Domain.Common.Entities.RefreshToken", b =>
                 {
-                    b.HasOne("Domain.Common.Entities.RefreshToken", "RefreshToken")
-                        .WithMany()
-                        .HasForeignKey("RefreshTokenId1");
+                    b.HasOne("Domain.Entities.Admin", null)
+                        .WithOne("RefreshToken")
+                        .HasForeignKey("Domain.Common.Entities.RefreshToken", "AdminId");
 
-                    b.Navigation("RefreshToken");
+                    b.HasOne("Domain.Entities.Parent", null)
+                        .WithOne("RefreshToken")
+                        .HasForeignKey("Domain.Common.Entities.RefreshToken", "ParentId");
+
+                    b.HasOne("Domain.Entities.Student", null)
+                        .WithOne("RefreshToken")
+                        .HasForeignKey("Domain.Common.Entities.RefreshToken", "StudentId");
+
+                    b.HasOne("Domain.Entities.Tutor", null)
+                        .WithOne("RefreshToken")
+                        .HasForeignKey("Domain.Common.Entities.RefreshToken", "TutorId");
                 });
 
             modelBuilder.Entity("Domain.Entities.Document", b =>
@@ -544,47 +534,37 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("TutorId");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Parent", b =>
-                {
-                    b.HasOne("Domain.Common.Entities.RefreshToken", "RefreshToken")
-                        .WithMany()
-                        .HasForeignKey("RefreshTokenId1");
-
-                    b.Navigation("RefreshToken");
-                });
-
             modelBuilder.Entity("Domain.Entities.Student", b =>
                 {
                     b.HasOne("Domain.Entities.Parent", "Parent")
                         .WithMany("Children")
                         .HasForeignKey("ParentId");
 
-                    b.HasOne("Domain.Common.Entities.RefreshToken", "RefreshToken")
-                        .WithMany()
-                        .HasForeignKey("RefreshTokenId1");
-
                     b.Navigation("Parent");
-
-                    b.Navigation("RefreshToken");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Tutor", b =>
+            modelBuilder.Entity("Domain.Entities.Admin", b =>
                 {
-                    b.HasOne("Domain.Common.Entities.RefreshToken", "RefreshToken")
-                        .WithMany()
-                        .HasForeignKey("RefreshTokenId1");
-
                     b.Navigation("RefreshToken");
                 });
 
             modelBuilder.Entity("Domain.Entities.Parent", b =>
                 {
                     b.Navigation("Children");
+
+                    b.Navigation("RefreshToken");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Student", b =>
+                {
+                    b.Navigation("RefreshToken");
                 });
 
             modelBuilder.Entity("Domain.Entities.Tutor", b =>
                 {
                     b.Navigation("Documents");
+
+                    b.Navigation("RefreshToken");
                 });
 #pragma warning restore 612, 618
         }

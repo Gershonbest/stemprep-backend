@@ -17,6 +17,7 @@ namespace Application.Tutors.Commands
         public async Task<Result> Handle(GetTutorInfoCommand request, CancellationToken cancellationToken)
         {
             var tutor = await context.Tutors
+                .Include(t=>t.Documents)
                 .Where(x => x.Guid == request.TutorGuid)
                 .FirstOrDefaultAsync(cancellationToken);
 
