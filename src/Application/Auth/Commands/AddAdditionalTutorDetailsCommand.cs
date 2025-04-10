@@ -20,11 +20,8 @@ public class AddAdditionalTutorDetailsCommand : IRequest<Result>
 }
 
 public class AddAdditionalTutorDetailsCommandHandler(
-    IConnectionMultiplexer redis,
     IApplicationDbContext context) : IRequestHandler<AddAdditionalTutorDetailsCommand, Result>
 {
-    private readonly IDatabase _redisDb = redis.GetDatabase();
-
     public async Task<Result> Handle(AddAdditionalTutorDetailsCommand request, CancellationToken cancellationToken)
     {
         #region business logic
@@ -45,6 +42,7 @@ public class AddAdditionalTutorDetailsCommandHandler(
         tutor.UserStatusDes = Status.Active.ToString();
         tutor.LastModifiedDate = DateTime.UtcNow;
         tutor.Gender = request.Gender;
+        tutor.PhoneNumber = request.PhoneNumber;
         tutor.Country = request.Country;
         tutor.State = request.State;
         tutor.Province = request.Province;

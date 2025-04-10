@@ -20,7 +20,7 @@ namespace Application.Documents.Queries
             var documents = await context.Documents
                             .Select(d => new DocumentDto
                             {
-                                DocumentId = d.Guid,
+                                Guid = d.Guid,
                                 CloudinaryUrl = d.CloudinaryUrl,
                                 FileName = d.FileName,
                                 FileType = d.FileType,

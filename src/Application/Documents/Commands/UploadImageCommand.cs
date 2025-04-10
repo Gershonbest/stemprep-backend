@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Serilog;
 using Domain.Entities;
 using Application.Auth;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Documents.Commands
 {
@@ -26,11 +27,12 @@ namespace Application.Documents.Commands
 
             // Upload the image to Cloudinary
             var result = await cloudinaryService.UploadImageAsync(request.ModuleImage);
+            Document image;
             if (result.Succeeded)
             {
                 Log.Information($"Document {request.ModuleImage.FileName} uploaded successfully to Cloudinary. URL: {result.Entity}");
                 // Create and save Document entity
-                var image = new Document()
+                image = new Document()
                 {
                     Guid = Guid.NewGuid(),
                     CloudinaryUrl = result.Entity as string,
@@ -49,7 +51,7 @@ namespace Application.Documents.Commands
 
             await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success<UploadImageCommand>("image uploaded successfully!");
+            return Result.Success<UploadImageCommand>("image uploaded successfully!", image);
         }
     }
 

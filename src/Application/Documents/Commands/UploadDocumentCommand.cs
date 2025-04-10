@@ -6,6 +6,8 @@ using Serilog;
 using Domain.Entities;
 using Application.Auth;
 using System.Text.Json.Serialization;
+using AutoMapper;
+using Application.Dto;
 
 namespace Application.Documents.Commands
 {
@@ -16,7 +18,7 @@ namespace Application.Documents.Commands
         public Guid UserGuid { get; set; }
     }
 
-    public class UploadDocumentCommandHandler(IApplicationDbContext context, ICloudinaryService cloudinaryService) : IRequestHandler<UploadDocumentCommand, Result>
+    public class UploadDocumentCommandHandler(IApplicationDbContext context, ICloudinaryService cloudinaryService, IMapper mapper) : IRequestHandler<UploadDocumentCommand, Result>
     {
         public async Task<Result> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
         {
@@ -28,11 +30,12 @@ namespace Application.Documents.Commands
 
             // Upload the image to Cloudinary
             var result = await cloudinaryService.UploadFileAsync(request.Document);
+            Document document;
             if (result.Succeeded)
             {
                 Log.Information($"Document {request.Document.FileName} uploaded successfully to Cloudinary. URL: {result.Entity}");
                 // Create and save Document entity
-                var image = new Document()
+                document = new Document()
                 {
                     CloudinaryUrl = result.Entity as string,
                     FileName = request.Document.FileName,
@@ -41,7 +44,7 @@ namespace Application.Documents.Commands
                     UserType = user.UserType,
                     UserTypeDesc = user.UserType.ToString()
                 };
-                context.Documents.Add(image);
+                context.Documents.Add(document);
             }
             else
             {
@@ -49,8 +52,8 @@ namespace Application.Documents.Commands
             }
 
             await context.SaveChangesAsync(cancellationToken);
-
-            return Result.Success<UploadDocumentCommand>("image uploaded successfully!");
+            var documentDto = mapper.Map<DocumentDto>(document);
+            return Result.Success<UploadDocumentCommand>("document uploaded successfully!", documentDto);
         }
     }
 

@@ -20,5 +20,17 @@ namespace API.Controllers
             }
             return BadRequest("Invalid User ID");
         }
+
+        [Authorize(Roles = "Tutor")]
+        [HttpGet("update")]
+        public async Task<IActionResult> Update()
+        {
+            if (Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid TutorGuid))
+            {
+                var command = new UpdateTutorCommand { TutorGuid = TutorGuid };
+                return Ok(await mediator.Send(command));
+            }
+            return BadRequest("Invalid User ID");
+        }
     }
 }
