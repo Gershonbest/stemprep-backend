@@ -4,13 +4,15 @@ using Application.Interfaces;
 using Domain.Enum;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace Application.Tutors.Commands
 {
     public class UpdateTutorCommand : IRequest<Result>
     {
-        public Guid TutorGuid { get; set; }
         public TutorDto TutorDto { get; set; }
+        [JsonIgnore]
+        public Guid TutorGuid { get; set; }
     }
 
     public class UpdateTutorStatusCommandHandler(IApplicationDbContext context) : IRequestHandler<UpdateTutorCommand, Result>
