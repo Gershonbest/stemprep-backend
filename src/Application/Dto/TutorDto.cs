@@ -10,6 +10,7 @@ namespace Application.Dto
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
+        public string PhoneNumber { get; set; }
         public TutorAccountStatus AccountStatus { get; set; }
         public string AccountStatusDesc { get; set; }
         public AvailabilityStatus AvailabilityStatus { get; set; }

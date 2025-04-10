@@ -27,7 +27,7 @@ namespace Application.Documents.Queries
                                 CloudinaryUrl = d.CloudinaryUrl,
                                 FileName = d.FileName,
                                 FileType = d.FileType,
-                                UserId = d.UserGuid,
+                                UserGuid = d.UserGuid,
                             })
                             .ToListAsync(cancellationToken);
             return Result.Success<GetDocumentsByUserCommand>("documents retrieved successfully", documents);
