@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Serilog;
 using Domain.Entities;
 using Application.Auth;
-using static System.Net.Mime.MediaTypeNames;
+using Domain.Enum;
 
 namespace Application.Documents.Commands
 {
@@ -40,7 +40,9 @@ namespace Application.Documents.Commands
                     FileType = Path.GetExtension(request.ModuleImage.FileName).ToLowerInvariant(),
                     UserGuid = request.UserGuid,
                     UserType = user.UserType,
-                    UserTypeDesc = user.UserType.ToString()
+                    UserTypeDesc = user.UserType.ToString(),
+                    DocumentType = DocumentType.Image,
+                    DocumentTypeDesc = DocumentType.Image.ToString()
                 };
                 context.Documents.Add(image);
             }

@@ -42,7 +42,9 @@ namespace Application.Documents.Commands
                 FileType = Path.GetExtension(request.ModuleImage.FileName).ToLowerInvariant(),
                 UserGuid = request.UserGuid,
                 UserType = user.UserType,
-                UserTypeDesc = user.UserType.ToString()
+                UserTypeDesc = user.UserType.ToString(),
+                DocumentType = oldimage.DocumentType,
+                DocumentTypeDesc = oldimage.DocumentType.ToString()
             };
 
             context.Documents.Remove(oldimage);

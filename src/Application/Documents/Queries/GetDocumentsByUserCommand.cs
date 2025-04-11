@@ -3,6 +3,7 @@ using Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Application.Dto;
+using AutoMapper;
 
 namespace Application.Documents.Queries
 {
@@ -12,7 +13,7 @@ namespace Application.Documents.Queries
     }
 
     public class GetDocumentsByUserCommandHandler(
-        IApplicationDbContext context) : IRequestHandler<GetDocumentsByUserCommand, Result>
+        IApplicationDbContext context,IMapper mapper) : IRequestHandler<GetDocumentsByUserCommand, Result>
     {
         public async Task<Result> Handle(GetDocumentsByUserCommand request, CancellationToken cancellationToken)
         {
@@ -21,15 +22,9 @@ namespace Application.Documents.Queries
                 return Result.Failure("Invalid user id");
             }
             var documents = await context.Documents
-                            .Select(d => new DocumentDto
-                            {
-                                Guid = d.Guid,
-                                CloudinaryUrl = d.CloudinaryUrl,
-                                FileName = d.FileName,
-                                FileType = d.FileType,
-                                UserGuid = d.UserGuid,
-                            })
+                            .Where(x => x.UserGuid == request.UserId)
                             .ToListAsync(cancellationToken);
+            mapper.Map<List<DocumentDto>>(documents);
             return Result.Success<GetDocumentsByUserCommand>("documents retrieved successfully", documents);
         }
     }

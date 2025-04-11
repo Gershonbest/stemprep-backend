@@ -8,12 +8,14 @@ using Application.Auth;
 using System.Text.Json.Serialization;
 using AutoMapper;
 using Application.Dto;
+using Domain.Enum;
 
 namespace Application.Documents.Commands
 {
     public class UploadDocumentCommand : IRequest<Result>
     {
         public IFormFile Document { get; set; }
+        public DocumentType DocumentType { get; set; }
         [JsonIgnore]
         public Guid UserGuid { get; set; }
     }
@@ -42,7 +44,9 @@ namespace Application.Documents.Commands
                     FileType = Path.GetExtension(request.Document.FileName).ToLowerInvariant(),
                     UserGuid = request.UserGuid,
                     UserType = user.UserType,
-                    UserTypeDesc = user.UserType.ToString()
+                    UserTypeDesc = user.UserType.ToString(),
+                    DocumentType = request.DocumentType,
+                    DocumentTypeDesc = request.DocumentType.ToString()
                 };
                 context.Documents.Add(document);
             }

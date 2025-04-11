@@ -11,5 +11,7 @@ namespace Domain.Entities
         public Guid UserGuid { get; set; }
         public UserType UserType { get; set; }
         public string UserTypeDesc { get; set; }
+        public DocumentType DocumentType { get; set; }
+        public string DocumentTypeDesc { get; set; }
     }
 }
