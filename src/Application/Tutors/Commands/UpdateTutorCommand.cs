@@ -52,7 +52,7 @@ namespace Application.Tutors.Commands
 
             await context.SaveChangesAsync(cancellationToken);
             var tutorDto = mapper.Map<TutorDto>(tutor);
-            return Result.Success("Tutor status updated successfully", tutorDto);
+            return Result.Success<UpdateTutorCommand>("Tutor status updated successfully",tutorDto);
         }
     }
 }
