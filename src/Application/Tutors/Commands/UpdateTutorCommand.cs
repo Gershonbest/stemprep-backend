@@ -1,6 +1,7 @@
 ﻿using Application.Common.Models;
 using Application.Dto;
 using Application.Interfaces;
+using AutoMapper;
 using Domain.Enum;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ namespace Application.Tutors.Commands
         public Guid TutorGuid { get; set; }
     }
 
-    public class UpdateTutorStatusCommandHandler(IApplicationDbContext context) : IRequestHandler<UpdateTutorCommand, Result>
+    public class UpdateTutorStatusCommandHandler(IApplicationDbContext context,IMapper mapper) : IRequestHandler<UpdateTutorCommand, Result>
     {
         public async Task<Result> Handle(UpdateTutorCommand request, CancellationToken cancellationToken)
         {
@@ -50,8 +51,8 @@ namespace Application.Tutors.Commands
             
 
             await context.SaveChangesAsync(cancellationToken);
-
-            return Result.Success("Tutor status updated successfully");
+            var tutorDto = mapper.Map<TutorDto>(tutor);
+            return Result.Success("Tutor status updated successfully", tutorDto);
         }
     }
 }

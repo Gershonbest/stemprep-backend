@@ -23,7 +23,7 @@ namespace API.Controllers
 
         [Authorize(Roles = "Tutor")]
         [HttpPost("update")]
-        public async Task<IActionResult> Update(UpdateTutorCommand command)
+        public async Task<IActionResult> Update([FromBody]UpdateTutorCommand command)
         {
             if (Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid TutorGuid))
             {
