@@ -92,7 +92,10 @@ namespace Infrastructure.Services
 
             try
             {
-                var deletionParams = new DeletionParams(publicId);
+                var deletionParams = new DeletionParams(publicId) 
+                {
+                    ResourceType = ResourceType.Raw
+                };
                 var result = await _cloudinary.DestroyAsync(deletionParams);
 
                 if (result.Result == "ok")
@@ -149,22 +152,17 @@ namespace Infrastructure.Services
         private static string ExtractPublicId(string secureUrl)
         {
             var uri = new Uri(secureUrl);
-            // The AbsolutePath might look like /<version>/tutor_documents/e9f1a2b3-...jpg
-            // Split the path segments.
             var segments = uri.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // Assuming the folder is always the second segment (after the version segment). 
-            // Adjust indexes as necessary based on your URL pattern.
             if (segments.Length < 2)
                 throw new ArgumentException("Invalid Cloudinary URL format.");
 
             // Reconstruct the public id: "tutor_documents/<publicId>"
-            string folder = segments[1];  // This assumes folder is the 2nd segment.
+            string folder = segments[4];  // This assumes folder is the 2nd segment.
             string publicIdWithExtension = segments.Last();
-            string publicIdWithoutExtension = Path.GetFileNameWithoutExtension(publicIdWithExtension);
+            //string publicIdWithoutExtension = Path.GetFileNameWithoutExtension(publicIdWithExtension);
 
             // Full public ID including folder:
-            return $"{folder}/{publicIdWithoutExtension}";
+            return $"{folder}/{publicIdWithExtension}";
         }
 
     }
