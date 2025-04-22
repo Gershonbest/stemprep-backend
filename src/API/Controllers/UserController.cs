@@ -10,8 +10,9 @@ namespace API.Controllers
     {
         [Authorize]
         [HttpGet("profile")]
-        public async Task<IActionResult> GetInfo([FromQuery] GetUserInfoCommand command)
+        public async Task<IActionResult> GetInfo()
         {
+            GetUserInfoCommand command = new();
             Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid UserGuid);
             command.UserGuid = UserGuid;
             return Ok(await mediator.Send(command));

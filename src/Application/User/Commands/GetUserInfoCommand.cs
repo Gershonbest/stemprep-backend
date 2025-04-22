@@ -4,11 +4,13 @@ using Application.Dto;
 using Application.Interfaces;
 using AutoMapper;
 using MediatR;
+using System.Text.Json.Serialization;
 
 namespace Application.Users.Commands
 {
     public class GetUserInfoCommand : IRequest<Result>
     {
+        [JsonIgnore]
         public Guid UserGuid { get; set; }
     }
 

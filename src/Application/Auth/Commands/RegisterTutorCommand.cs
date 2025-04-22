@@ -1,10 +1,13 @@
+using Application.Common;
 using Application.Common.Helpers;
 using Application.Common.Models;
 using Application.Extensions;
 using Application.Interfaces;
+using Domain.Common.Entities;
 using Domain.Entities;
 using Domain.Enum;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using StackExchange.Redis;
 
 namespace Application.Auth.Commands;
@@ -22,6 +25,9 @@ public class RegisterTutorCommandHandler(
     IEmailService emailService,
     IConnectionMultiplexer redis,
     IApplicationDbContext context,
+    ITokenGenerator tokenGenerator,
+    IRefreshTokenService refreshTokenService,
+    IHttpContextAccessor httpContextAccessor,
     ISecretHasherService secretHasherService) : IRequestHandler<RegisterTutorCommand, Result>
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
@@ -65,7 +71,17 @@ public class RegisterTutorCommandHandler(
         // Send the registration code to the user's email
         await emailService.SendRegistrationConfirmationEmailAsync(tutor.Email, tutor.FirstName, registrationCode);
 
+        var tokens = tokenGenerator.GenerateTokens(tutor.FirstName, tutor.Email!, tutor.UserType.ToString(), tutor.Guid);
+
+        CookieHelper.SetTokensInCookies(httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
+
+        await refreshTokenService.AddRefreshTokenAsync<Tutor>(new RefreshToken
+        {
+            Token = tokens.RefreshToken,
+            Expires = DateTime.UtcNow.AddDays(30)
+        });
+
         await context.SaveChangesAsync(cancellationToken);
-        return Result.Success<RegisterTutorCommand>("Instructor registered successfully!");
+        return Result.Success<RegisterTutorCommand>("Instructor registered successfully!", tokens);
     }
 }
