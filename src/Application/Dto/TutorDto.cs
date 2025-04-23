@@ -15,5 +15,6 @@ namespace Application.Dto
         public string AccountStatusDesc { get; set; }
         public AvailabilityStatus AvailabilityStatus { get; set; }
         public string AvailabilityStatusDesc { get; set; }
+        public string ProfileUrl { get; set; }
     }
 }

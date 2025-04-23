@@ -53,6 +53,8 @@ namespace Application.Documents.Commands
 
             await context.SaveChangesAsync(cancellationToken);
 
+            //TODO: return the dto
+
             return Result.Success<UploadImageCommand>("image uploaded successfully!", image);
         }
     }
