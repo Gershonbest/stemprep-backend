@@ -48,10 +48,18 @@ namespace Application.Tutors.Commands
                 tutor.AvailabilityStatusDesc = request.TutorDto.AvailabilityStatus.ToString();
             }
             tutor.LastModifiedDate = DateTime.UtcNow;
-            
 
             await context.SaveChangesAsync(cancellationToken);
+
+            var profileUrl = await context.Documents
+              .AsNoTracking()
+              .Where(x => x.UserGuid == request.TutorGuid && x.DocumentType == Domain.Enum.DocumentType.Image)
+              .Select(x => x.CloudinaryUrl)
+              .FirstOrDefaultAsync(cancellationToken);
+
             var tutorDto = mapper.Map<TutorDto>(tutor);
+            tutorDto.ProfileUrl = profileUrl;
+
             return Result.Success<UpdateTutorCommand>("Tutor status updated successfully",tutorDto);
         }
     }
