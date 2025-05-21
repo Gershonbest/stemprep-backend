@@ -22,7 +22,7 @@ namespace Infrastructure.Services
 
         }
 
-        public TokenResponse GenerateTokens(string userName, string email, string role, Guid guid)
+        public TokenResponse GenerateTokens(string userName, string email, string role, Guid guid, bool isOnboarded)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_key);
@@ -36,7 +36,8 @@ namespace Infrastructure.Services
                     new Claim(ClaimTypes.NameIdentifier, guid.ToString()),
                     new Claim(ClaimTypes.Email, email),
                     new Claim(ClaimTypes.Role, role),
-                    new Claim(ClaimTypes.Name, userName)
+                    new Claim(ClaimTypes.Name, userName),
+                    new Claim("IsOnboarded", isOnboarded.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddHours(2), // Access token expires in 2Hrs 
                 Issuer = _issuer,

@@ -6,6 +6,8 @@ using MediatR;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Http;
 using Domain.Common.Entities;
+using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Auth.Commands;
 
@@ -56,14 +58,20 @@ public class LoginUserCommandHandler<TUser>(IApplicationDbContext context,
 
             return Result.Failure<LoginUserCommand<TUser>>($"User {request.Email} account is not verified. A new confirmation code has been sent.");
         }
-
-        string hashedPassword = secretHasherService.Hash(request.Password);
+        bool isOnboarded = true;
+        if (typeof(TUser) == typeof(Parent))
+        {
+            // check if the parent has any children entities.
+            var parent = user as Parent;
+            isOnboarded = await context.Students.AnyAsync(s => s.ParentEmail == parent.Email, cancellationToken);
+        }
+            string hashedPassword = secretHasherService.Hash(request.Password);
         if (user.PasswordHash != hashedPassword)
         {
             return Result.Failure<LoginUserCommand<TUser>>("Invalid Email or Password");
         }
 
-        var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString(), user.Guid);
+        var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString(), user.Guid, isOnboarded);
 
         CookieHelper.SetTokensInCookies(httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
 

@@ -4,7 +4,7 @@ namespace Application.Interfaces
 {  
     public interface ITokenGenerator  
     {  
-        TokenResponse GenerateTokens(string userId, string email, string role, Guid guid);  
+        TokenResponse GenerateTokens(string userId, string email, string role, Guid guid, bool isOnboarded);  
 
         string GetEmailFromToken(ClaimsPrincipal user);  
 
