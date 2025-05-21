@@ -22,7 +22,7 @@ namespace Infrastructure.Services
 
         }
 
-        public TokenResponse GenerateTokens(string userName, string email, string role, Guid guid, bool isOnboarded)
+        public TokenResponse GenerateTokens(string userName, string email, string role, Guid guid, bool isOnboarded = true)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_key);
