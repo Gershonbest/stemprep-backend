@@ -6,31 +6,43 @@ using MediatR;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Http;
 using Domain.Common.Entities;
+using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Auth.Commands;
 
-public class LoginUserCommand : IRequest<Result>
+public class LoginUserCommand<TUser> : IRequest<Result>
+    where TUser : BaseUser
 {
     public string Email { get; set; }
     public string Password { get; set; }
 }
 
-public class StudentLoginCommandHandler(IApplicationDbContext context,
+public class LoginUserCommandHandler<TUser>(IApplicationDbContext context,
                                   ITokenGenerator generateToken,
                                   IEmailService emailService,
                                   IConnectionMultiplexer redis,
                                   IHttpContextAccessor httpContextAccessor,
-                                  ISecretHasherService secretHasherService) : IRequestHandler<LoginUserCommand, Result>
+                                  ISecretHasherService secretHasherService,
+                                  IRefreshTokenService refreshTokenService) : IRequestHandler<LoginUserCommand<TUser>, Result>
+    where TUser : BaseUser
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
 
-    public async Task<Result> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(LoginUserCommand<TUser> request, CancellationToken cancellationToken)
     {
-        BaseUser user = await new AuthHelper(context).GetUserByEmail(request.Email);
+        TUser user = await new AuthHelper(context).GetUserByEmail<TUser>(request.Email);
 
         if (user == null)
         {
-            return Result.Failure<LoginUserCommand>("Invalid Email or Password");
+            return Result.Failure<LoginUserCommand<TUser>>("Invalid Email or Password");
+        }
+
+        var userType = await new AuthHelper(context).GetUserTypeByEmail(request.Email);
+
+        if (userType != typeof(TUser))
+        {
+            return Result.Failure<LoginUserCommand<TUser>>($"User is registered as a {userType.Name}");
         }
 
         if (!user.IsVerified)
@@ -44,19 +56,31 @@ public class StudentLoginCommandHandler(IApplicationDbContext context,
             // Send the confirmation code to the user's email
             await emailService.SendAccountConfirmationCodeAsync(user.Email!, confirmationCode);
 
-            return Result.Failure<LoginUserCommand>($"User {request.Email} account is not verified. A new confirmation code has been sent.");
+            return Result.Failure<LoginUserCommand<TUser>>($"User {request.Email} account is not verified. A new confirmation code has been sent.");
         }
-
-        string hashedPassword = secretHasherService.Hash(request.Password);
+        bool isOnboarded = true;
+        if (typeof(TUser) == typeof(Parent))
+        {
+            // check if the parent has any children entities.
+            var parent = user as Parent;
+            isOnboarded = await context.Students.AnyAsync(s => s.ParentEmail == parent.Email, cancellationToken);
+        }
+            string hashedPassword = secretHasherService.Hash(request.Password);
         if (user.PasswordHash != hashedPassword)
         {
-            return Result.Failure<LoginUserCommand>("Invalid Email or Password");
+            return Result.Failure<LoginUserCommand<TUser>>("Invalid Email or Password");
         }
 
-        var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString(), user.Guid);
+        var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString(), user.Guid, isOnboarded);
 
         CookieHelper.SetTokensInCookies(httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
 
-        return Result.Success<LoginUserCommand>("Successfully logged in", tokens);
+        await refreshTokenService.AddRefreshTokenAsync<TUser>(new RefreshToken
+        {
+            Token = tokens.RefreshToken,
+            Expires = DateTime.UtcNow.AddDays(30)
+        });
+
+        return Result.Success<LoginUserCommand<TUser>>("Successfully logged in", tokens);
     }
 }

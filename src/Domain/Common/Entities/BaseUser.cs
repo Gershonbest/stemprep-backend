@@ -19,7 +19,7 @@ public abstract class BaseUser
     public int FailedLoginAttempts { get; set; }
     public bool IsLockedOut { get; set; }
     public string Gender { get; set; }
-    public List<string> PhoneNumbers { get; set; }
+    public string PhoneNumber { get; set; }
     public string Email { get; set; }
 
     public bool IsVerified { get; set; }
@@ -33,5 +33,6 @@ public abstract class BaseUser
     public string Country { get; set; }
     public string State { get; set; }
     public string Province { get; set; }
+    public RefreshToken? RefreshToken { get; set; }
 
 }

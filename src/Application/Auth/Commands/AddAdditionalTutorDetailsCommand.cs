@@ -20,18 +20,15 @@ public class AddAdditionalTutorDetailsCommand : IRequest<Result>
 }
 
 public class AddAdditionalTutorDetailsCommandHandler(
-    IConnectionMultiplexer redis,
     IApplicationDbContext context) : IRequestHandler<AddAdditionalTutorDetailsCommand, Result>
 {
-    private readonly IDatabase _redisDb = redis.GetDatabase();
-
     public async Task<Result> Handle(AddAdditionalTutorDetailsCommand request, CancellationToken cancellationToken)
     {
         #region business logic
 
         Tutor tutor = await context.Tutors.Where(t => t.Email == request.Email).FirstOrDefaultAsync(CancellationToken.None);
 
-        bool userExists = await new AuthHelper(context).CheckIfUserExists(request.Email);
+        bool userExists = await new AuthHelper(context).GlobalCheckIfUserExists(request.Email);
         if (tutor == null)
         {
             return Result.Failure("Tutor does not exist");
@@ -45,6 +42,7 @@ public class AddAdditionalTutorDetailsCommandHandler(
         tutor.UserStatusDes = Status.Active.ToString();
         tutor.LastModifiedDate = DateTime.UtcNow;
         tutor.Gender = request.Gender;
+        tutor.PhoneNumber = request.PhoneNumber;
         tutor.Country = request.Country;
         tutor.State = request.State;
         tutor.Province = request.Province;

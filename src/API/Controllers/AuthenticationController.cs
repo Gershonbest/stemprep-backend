@@ -1,5 +1,6 @@
 using Application.Auth.Commands;
 using Application.Parents.Queries;
+using Domain.Entities;
 using MediatR;  
 using Microsoft.AspNetCore.Mvc;  
 
@@ -13,6 +14,12 @@ namespace API.Controllers
         //public async Task<IActionResult> Register(RegisterStudentCommand command)
         //{
         //    command.AccessToken = accessToken;
+        //    return Ok(await mediator.Send(command));
+        //}
+
+        //[HttpPost("refreshtoken")]
+        //public async Task<IActionResult> RefreshLogin(RefreshLoginCommand command)
+        //{
         //    return Ok(await mediator.Send(command));
         //}
 
@@ -58,8 +65,38 @@ namespace API.Controllers
             return Ok(await mediator.Send(command));
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginUserCommand command)
+        [HttpPost("tutor/login")]
+        public async Task<IActionResult> TutorLogin(LoginUserCommand<Tutor> command)
+        {
+
+            var res = await mediator.Send(command);
+            var token = (TokenResponse)res?.Entity;
+            if (token != null)
+            {
+                HttpContext.Response.Cookies.Append("stem-prep-accessToken", token.AccessToken);
+                HttpContext.Response.Cookies.Append("stem-prep-refreshToken", token.RefreshToken);
+            }
+
+            return Ok(res);
+        }
+
+        [HttpPost("parent/login")]
+        public async Task<IActionResult> ParentLogin(LoginUserCommand<Parent> command)
+        {
+
+            var res = await mediator.Send(command);
+            var token = (TokenResponse)res?.Entity;
+            if (token != null)
+            {
+                HttpContext.Response.Cookies.Append("stem-prep-accessToken", token.AccessToken);
+                HttpContext.Response.Cookies.Append("stem-prep-refreshToken", token.RefreshToken);
+            }
+
+            return Ok(res);
+        }
+
+        [HttpPost("admin/login")]
+        public async Task<IActionResult> AdminLogin(LoginUserCommand<Admin> command)
         {
 
             var res = await mediator.Send(command);

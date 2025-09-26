@@ -5,6 +5,9 @@ using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 using CloudinaryDotNet;
 using Application.Interfaces;
+using Domain.Entities;
+using MediatR;
+using Application.Auth.Commands;
 
 namespace Application
 {
@@ -16,6 +19,10 @@ namespace Application
 
             services.AddAutoMapper(typeof(MappingProfile));
             services.AddMediatR(configuration => configuration.RegisterServicesFromAssembly(assembly));
+
+            services.AddTransient(typeof(IRequestHandler<LoginUserCommand<Parent>, Result>), typeof(LoginUserCommandHandler<Parent>));
+            services.AddTransient(typeof(IRequestHandler<LoginUserCommand<Tutor>, Result>), typeof(LoginUserCommandHandler<Tutor>));
+            services.AddTransient(typeof(IRequestHandler<LoginUserCommand<Admin>, Result>), typeof(LoginUserCommandHandler<Admin>));
 
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(configuration.GetConnectionString("redisConnection")));
 

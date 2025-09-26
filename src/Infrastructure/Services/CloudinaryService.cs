@@ -83,6 +83,87 @@ namespace Infrastructure.Services
             return Result.Success(uploadResult.SecureUrl.ToString());
         }
 
-    }
+        public async Task<Result> DeleteFileAsync(string secureUrl)
+        {
+            if (string.IsNullOrEmpty(secureUrl))
+                return Result.Failure("ID must be provided for deletion.");
 
+            string publicId = ExtractPublicId(secureUrl);
+
+            try
+            {
+                var deletionParams = new DeletionParams(publicId) 
+                {
+                    ResourceType = ResourceType.Raw
+                };
+                var result = await _cloudinary.DestroyAsync(deletionParams);
+
+                if (result.Result == "ok")
+                {
+                    return Result.Success("File deleted successfully.");
+                }
+
+                return Result.Failure("Failed to delete the file from Cloudinary.");
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Exception during file deletion: {ex.Message}");
+            }
+        }
+
+        public async Task<Result> EditImageAsync(string secureUrl, IFormFile newImage)
+        {
+            if (string.IsNullOrEmpty(secureUrl) || newImage == null || newImage.Length == 0)
+                return Result.Failure("Invalid input: Public ID and a valid image file are required.");
+
+            string publicId = ExtractPublicId(secureUrl);
+
+            try
+            {
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(newImage.FileName, newImage.OpenReadStream()),
+                    PublicId = publicId, // Overwrites the existing image
+                    Overwrite = true,
+                    Transformation = new Transformation().Width(800).Height(600).Crop("limit").Quality("auto")
+                };
+
+                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+                if (uploadResult.Error != null)
+                {
+                    return Result.Failure($"Cloudinary error: {uploadResult.Error.Message}");
+                }
+
+                return Result.Success(uploadResult.SecureUrl.ToString());
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"Exception during image update: {ex.Message}");
+            }
+        }
+
+        //private static string ExtractPublicId(string secureUrl)
+        //{
+        //    var uri = new Uri(secureUrl);
+        //    var filename = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
+        //    return filename;
+        //}
+        private static string ExtractPublicId(string secureUrl)
+        {
+            var uri = new Uri(secureUrl);
+            var segments = uri.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length < 2)
+                throw new ArgumentException("Invalid Cloudinary URL format.");
+
+            // Reconstruct the public id: "tutor_documents/<publicId>"
+            string folder = segments[4];  // This assumes folder is the 2nd segment.
+            string publicIdWithExtension = segments.Last();
+            //string publicIdWithoutExtension = Path.GetFileNameWithoutExtension(publicIdWithExtension);
+
+            // Full public ID including folder:
+            return $"{folder}/{publicIdWithExtension}";
+        }
+
+    }
 }

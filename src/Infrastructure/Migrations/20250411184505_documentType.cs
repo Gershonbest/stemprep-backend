@@ -5,35 +5,35 @@
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class UsertypeToDocument : Migration
+    public partial class documentType : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "UserEmail",
-                table: "Documents",
-                newName: "UserTypeDesc");
-
             migrationBuilder.AddColumn<int>(
-                name: "UserType",
+                name: "DocumentType",
                 table: "Documents",
                 type: "integer",
                 nullable: false,
                 defaultValue: 0);
+
+            migrationBuilder.AddColumn<string>(
+                name: "DocumentTypeDesc",
+                table: "Documents",
+                type: "text",
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "UserType",
+                name: "DocumentType",
                 table: "Documents");
 
-            migrationBuilder.RenameColumn(
-                name: "UserTypeDesc",
-                table: "Documents",
-                newName: "UserEmail");
+            migrationBuilder.DropColumn(
+                name: "DocumentTypeDesc",
+                table: "Documents");
         }
     }
 }

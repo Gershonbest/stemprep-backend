@@ -10,13 +10,27 @@ namespace API.Controllers
     public class TutorController(IMediator mediator, ITokenGenerator tokenGenerator) : ControllerBase
     {
         [Authorize]
-        [HttpGet("info")]
-        public async Task<IActionResult> GetInfo([FromBody] GetTutorInfoCommand command)
+        [HttpGet("dashboardinfo")]
+        public async Task<IActionResult> GetInfo()
         {
-            Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid TutorGuid);
-            command.TutorGuid = TutorGuid;
-            return Ok(await mediator.Send(command));
+            if (Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid TutorGuid))
+            {
+                var command = new GetTutorInfoCommand { TutorGuid = TutorGuid };
+                return Ok(await mediator.Send(command));
+            }
+            return BadRequest("Invalid User ID");
         }
 
+        [Authorize(Roles = "Tutor")]
+        [HttpPost("update")]
+        public async Task<IActionResult> Update([FromBody]UpdateTutorCommand command)
+        {
+            if (Guid.TryParse(tokenGenerator.GetOwnerIdFromToken(User), out Guid TutorGuid))
+            {
+                command.TutorGuid = TutorGuid;
+                return Ok(await mediator.Send(command));
+            }
+            return BadRequest("Invalid User ID");
+        }
     }
 }

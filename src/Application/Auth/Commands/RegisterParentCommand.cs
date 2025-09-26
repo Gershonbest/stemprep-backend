@@ -34,7 +34,7 @@ public class RegisterParentCommandHandler(
         #endregion
 
         // Check if the student already exists
-        bool userExist = await new AuthHelper(context).CheckIfUserExists(request.Email);
+        bool userExist = await new AuthHelper(context).GlobalCheckIfUserExists(request.Email);
 
         if (userExist)
             return Result.Failure(request, $"{request.Email} already exists");
@@ -65,6 +65,6 @@ public class RegisterParentCommandHandler(
         await emailSender.SendRegistrationConfirmationEmailAsync(parent.Email, parent.FirstName, registrationCode);
 
 
-        return Result.Success<RegisterParentCommand>("Registration code sent successfully! Please confirm your registration.", parent);
+        return Result.Success<RegisterParentCommand>("Registration code sent successfully! Please confirm your registration.");
     }
 }

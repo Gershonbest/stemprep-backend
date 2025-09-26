@@ -17,7 +17,7 @@ namespace Application.Auth.Commands
         public async Task<Result> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
         {
             // Check if the user exists based on the provided email
-            bool userExists = await new AuthHelper(context).CheckIfUserExists(request.Email);
+            bool userExists = await new AuthHelper(context).GlobalCheckIfUserExists(request.Email);
             if (!userExists)
             {
                 return Result.Failure("Email does not exist.");

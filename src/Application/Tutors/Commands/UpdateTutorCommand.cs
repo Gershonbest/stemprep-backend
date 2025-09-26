@@ -1,0 +1,66 @@
+﻿using Application.Common.Models;
+using Application.Dto;
+using Application.Interfaces;
+using AutoMapper;
+using Domain.Enum;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
+
+namespace Application.Tutors.Commands
+{
+    public class UpdateTutorCommand : IRequest<Result>
+    {
+        public TutorDto TutorDto { get; set; }
+        [JsonIgnore]
+        public Guid TutorGuid { get; set; }
+    }
+
+    public class UpdateTutorStatusCommandHandler(IApplicationDbContext context,IMapper mapper) : IRequestHandler<UpdateTutorCommand, Result>
+    {
+        public async Task<Result> Handle(UpdateTutorCommand request, CancellationToken cancellationToken)
+        {
+            if (request.TutorGuid == Guid.Empty)
+                return Result.Failure("Invalid Tutor Guid");
+            if (request.TutorDto == null)
+                return Result.Failure("Invalid Tutor Data");
+
+            var tutor = await context.Tutors
+                .FirstOrDefaultAsync(t => t.Guid == request.TutorGuid, cancellationToken);
+
+            if (tutor == null)
+                return Result.Failure("Tutor not found");
+
+            if (request.TutorDto.FirstName != null)
+                tutor.FirstName = request.TutorDto.FirstName;
+            if (request.TutorDto.LastName != null)
+                tutor.LastName = request.TutorDto.LastName;
+            if (request.TutorDto.Email != null)
+                tutor.Email = request.TutorDto.Email;
+            if (request.TutorDto.AccountStatus > 0)
+            {
+                tutor.AccountStatus = request.TutorDto.AccountStatus;
+                tutor.AccountStatusDesc = request.TutorDto.AccountStatus.ToString();
+            }
+            if (request.TutorDto.AvailabilityStatus > 0)
+            {
+                tutor.AvailabilityStatus = request.TutorDto.AvailabilityStatus;
+                tutor.AvailabilityStatusDesc = request.TutorDto.AvailabilityStatus.ToString();
+            }
+            tutor.LastModifiedDate = DateTime.UtcNow;
+
+            await context.SaveChangesAsync(cancellationToken);
+
+            var profileUrl = await context.Documents
+              .AsNoTracking()
+              .Where(x => x.UserGuid == request.TutorGuid && x.DocumentType == Domain.Enum.DocumentType.Image)
+              .Select(x => x.CloudinaryUrl)
+              .FirstOrDefaultAsync(cancellationToken);
+
+            var tutorDto = mapper.Map<TutorDto>(tutor);
+            tutorDto.ProfileUrl = profileUrl;
+
+            return Result.Success<UpdateTutorCommand>("Tutor status updated successfully",tutorDto);
+        }
+    }
+}

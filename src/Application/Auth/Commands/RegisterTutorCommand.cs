@@ -1,10 +1,13 @@
+using Application.Common;
 using Application.Common.Helpers;
 using Application.Common.Models;
 using Application.Extensions;
 using Application.Interfaces;
+using Domain.Common.Entities;
 using Domain.Entities;
 using Domain.Enum;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using StackExchange.Redis;
 
 namespace Application.Auth.Commands;
@@ -22,6 +25,9 @@ public class RegisterTutorCommandHandler(
     IEmailService emailService,
     IConnectionMultiplexer redis,
     IApplicationDbContext context,
+    ITokenGenerator tokenGenerator,
+    IRefreshTokenService refreshTokenService,
+    IHttpContextAccessor httpContextAccessor,
     ISecretHasherService secretHasherService) : IRequestHandler<RegisterTutorCommand, Result>
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
@@ -32,7 +38,7 @@ public class RegisterTutorCommandHandler(
         await request.ValidateAsync(new UserCreateValidator(), cancellationToken);
         #endregion
 
-        bool userExists = await new AuthHelper(context).CheckIfUserExists(request.Email);
+        bool userExists = await new AuthHelper(context).GlobalCheckIfUserExists(request.Email);
         if (userExists)
         {
             return Result.Failure("User already exists. Please login or use a different email address.");
@@ -46,8 +52,8 @@ public class RegisterTutorCommandHandler(
             UserType = UserType.Tutor,
             UserTypeDesc = UserType.Tutor.ToString(),
             IsVerified = true,
-            AccountStatus = TutorAccountStatus.Pending,
-            AccountStatusDesc = TutorAccountStatus.Pending.ToString(),
+            AccountStatus = TutorAccountStatus.Unverified,
+            AccountStatusDesc = TutorAccountStatus.Unverified.ToString(),
             AvailabilityStatus = AvailabilityStatus.Available,
             AvailabilityStatusDesc = AvailabilityStatus.Available.ToString(),
             UserStatus = Status.Active,
@@ -65,7 +71,17 @@ public class RegisterTutorCommandHandler(
         // Send the registration code to the user's email
         await emailService.SendRegistrationConfirmationEmailAsync(tutor.Email, tutor.FirstName, registrationCode);
 
+        var tokens = tokenGenerator.GenerateTokens(tutor.FirstName, tutor.Email!, tutor.UserType.ToString(), tutor.Guid);
+
+        CookieHelper.SetTokensInCookies(httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
+
+        await refreshTokenService.AddRefreshTokenAsync<Tutor>(new RefreshToken
+        {
+            Token = tokens.RefreshToken,
+            Expires = DateTime.UtcNow.AddDays(30)
+        });
+
         await context.SaveChangesAsync(cancellationToken);
-        return Result.Success<RegisterTutorCommand>("Instructor registered successfully!");
+        return Result.Success<RegisterTutorCommand>("Instructor registered successfully!", tokens);
     }
 }

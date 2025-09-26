@@ -17,13 +17,21 @@ namespace Application.Tutors.Commands
         public async Task<Result> Handle(GetTutorInfoCommand request, CancellationToken cancellationToken)
         {
             var tutor = await context.Tutors
+                .AsNoTracking()
                 .Where(x => x.Guid == request.TutorGuid)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var profileUrl = await context.Documents
+                .AsNoTracking()
+                .Where(x => x.UserGuid == request.TutorGuid && x.DocumentType == Domain.Enum.DocumentType.Image)
+                .Select(x => x.CloudinaryUrl)
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (tutor == null)
                 return Result.Failure("Tutor not found");
 
             var tutorDto = mapper.Map<TutorDto>(tutor);
+            tutorDto.ProfileUrl = profileUrl;
 
             return Result.Success(tutorDto);
         }

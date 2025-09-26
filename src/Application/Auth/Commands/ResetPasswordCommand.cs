@@ -24,7 +24,7 @@ namespace Application.Auth.Commands
             // Validate password using custom validator
             await request.ValidateAsync(new PasswordValidator(), cancellationToken);
 
-            BaseUser user = await new AuthHelper(context).GetUserByEmail(request.Email);
+            BaseUser user = await new AuthHelper(context).GetBaseUserByEmail(request.Email);
             if (user == null)
             {
                 return Result.Failure<ResetPasswordCommand>("Invalid email.");
@@ -37,9 +37,9 @@ namespace Application.Auth.Commands
             }
 
             user.PasswordHash = secretHasherService.Hash(request.NewPassword);
-
+            await context.SaveChangesAsync(cancellationToken);
             // Success response
-            return Result.Success("Password reset successfully.");
+            return Result.Success<ResetPasswordCommand>("Password reset successfully.");
         }
     }
 }
