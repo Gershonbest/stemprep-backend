@@ -5,6 +5,6 @@ namespace Domain.Entities
 {
     public class Parent : BaseUser
     {
-        public List<Student> Students { get; set; }
+        public List<Student> Children { get; set; }
     }
 }

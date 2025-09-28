@@ -1,88 +1,86 @@
-//using Application.Common;
-//using Application.Common.Helpers;
-//using Application.Common.Models;
-//using Application.Interfaces;
-//using MediatR;
-//using StackExchange.Redis;
-//using Domain.Entities;
-//using Domain.Enum;
-//using Microsoft.AspNetCore.Http;
+using Application.Common;
+using Application.Common.Helpers;
+using Application.Common.Models;
+using Application.Interfaces;
+using MediatR;
+using StackExchange.Redis;
+using Microsoft.AspNetCore.Http;
+using Domain.Common.Entities;
+using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
-//namespace Application.Auth.Commands;
+namespace Application.Auth.Commands;
 
-//public class LoginUserCommand : IRequest<Result>
-//{
-//    public string Email { get; set; }
-//    public string Password { get; set; }
-//}
+public class LoginUserCommand<TUser> : IRequest<Result>
+    where TUser : BaseUser
+{
+    public string Email { get; set; }
+    public string Password { get; set; }
+}
 
-//public class StudentLoginCommandHandler : IRequestHandler<LoginUserCommand, Result>
-//{
-//    private readonly UserManager<Student> _userManager;
-//    private readonly SignInManager<Student> _signInManager;
-//    private readonly ITokenGenerator _tokenGenerator;
-//    private readonly IEmailService _emailService;
-//    private readonly IDatabase _redisDb;
-//    private readonly IHttpContextAccessor _httpContextAccessor;
+public class LoginUserCommandHandler<TUser>(IApplicationDbContext context,
+                                  ITokenGenerator generateToken,
+                                  IEmailService emailService,
+                                  IConnectionMultiplexer redis,
+                                  IHttpContextAccessor httpContextAccessor,
+                                  ISecretHasherService secretHasherService,
+                                  IRefreshTokenService refreshTokenService) : IRequestHandler<LoginUserCommand<TUser>, Result>
+    where TUser : BaseUser
+{
+    private readonly IDatabase _redisDb = redis.GetDatabase();
 
-//    public StudentLoginCommandHandler(SignInManager<Student> signInManager,
-//                                      UserManager<Student> userManager,
-//                                      ITokenGenerator generateToken,
-//                                      IEmailService emailService,
-//                                      IConnectionMultiplexer redis,
-//                                      IHttpContextAccessor httpContextAccessor)
-//    {
-//        _signInManager = signInManager;
-//        _userManager = userManager;
-//        _tokenGenerator = generateToken;
-//        _emailService = emailService;
-//        _redisDb = redis.GetDatabase();
-//        _httpContextAccessor = httpContextAccessor;
-//    }
+    public async Task<Result> Handle(LoginUserCommand<TUser> request, CancellationToken cancellationToken)
+    {
+        TUser user = await new AuthHelper(context).GetUserByEmail<TUser>(request.Email);
 
-//    public async Task<Result> Handle(LoginUserCommand request, CancellationToken cancellationToken)
-//    {
-//        Student? user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+        {
+            return Result.Failure<LoginUserCommand<TUser>>("Invalid Email or Password");
+        }
 
-//        if (user == null)
-//        {
-//            return Result.Failure<LoginUserCommand>("User Not Found.");
-//        }
+        var userType = await new AuthHelper(context).GetUserTypeByEmail(request.Email);
 
-//        if (!user.IsVerified)
-//        {
-//            // Generate and send a new confirmation code
-//            string confirmationCode = GenerateCode.GenerateRegistrationCode();
+        if (userType != typeof(TUser))
+        {
+            return Result.Failure<LoginUserCommand<TUser>>($"User is registered as a {userType.Name}");
+        }
 
-//            // Store the confirmation code in Redis with an expiration of 2 hours
-//            await _redisDb.StringSetAsync($"ConfirmationCode:{request.Email}", confirmationCode, TimeSpan.FromHours(2));
+        if (!user.IsVerified)
+        {
+            // Generate and send a new confirmation code
+            string confirmationCode = GenerateCode.GenerateRegistrationCode();
 
-//            // Send the confirmation code to the user's email
-//            await _emailService.SendAccountConfirmationCodeAsync(user.Email!, confirmationCode);
+            // Store the confirmation code in Redis with an expiration of 2 hours
+            await _redisDb.StringSetAsync($"RegistrationCode:{request.Email}", confirmationCode, TimeSpan.FromHours(2));
 
-//            return Result.Failure<LoginUserCommand>($"User {request.Email} account is not verified. A new confirmation code has been sent.");
-//        }
+            // Send the confirmation code to the user's email
+            await emailService.SendAccountConfirmationCodeAsync(user.Email!, confirmationCode);
 
-//        var signInResult = await _signInManager.PasswordSignInAsync(user, request.Password, isPersistent: false, lockoutOnFailure: true);
+            return Result.Failure<LoginUserCommand<TUser>>($"User {request.Email} account is not verified. A new confirmation code has been sent.");
+        }
+        bool isOnboarded = true;
+        if (typeof(TUser) == typeof(Parent))
+        {
+            // check if the parent has any children entities.
+            var parent = user as Parent;
+            isOnboarded = await context.Students.AnyAsync(s => s.ParentEmail == parent.Email, cancellationToken);
+        }
+            string hashedPassword = secretHasherService.Hash(request.Password);
+        if (user.PasswordHash != hashedPassword)
+        {
+            return Result.Failure<LoginUserCommand<TUser>>("Invalid Email or Password");
+        }
 
-//        if (!signInResult.Succeeded)
-//        {
-//            if (signInResult.IsLockedOut)
-//            {
-//                user.UserStatus = Status.Suspended;
-//                user.UserStatusDes = Status.Suspended.ToString();
-//                await _userManager.UpdateAsync(user);
+        var tokens = generateToken.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString(), user.Guid, isOnboarded);
 
-//                return Result.Failure<LoginUserCommand>($"User {request.Email} account locked: Unsuccessful 3 login attempts.");
-//            }
+        CookieHelper.SetTokensInCookies(httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
 
-//            return Result.Failure<LoginUserCommand>("Invalid Email or Password");
-//        }
+        await refreshTokenService.AddRefreshTokenAsync<TUser>(new RefreshToken
+        {
+            Token = tokens.RefreshToken,
+            Expires = DateTime.UtcNow.AddDays(30)
+        });
 
-//        var tokens = _tokenGenerator.GenerateTokens(user.FirstName, user.Email!, user.UserType.ToString());
-
-//        CookieHelper.SetTokensInCookies(_httpContextAccessor, tokens.AccessToken, tokens.RefreshToken);
-    
-//        return Result.Success<LoginUserCommand>("Successfully logged in", tokens);  
-//    }
-//}
+        return Result.Success<LoginUserCommand<TUser>>("Successfully logged in", tokens);
+    }
+}

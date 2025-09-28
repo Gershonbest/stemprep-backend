@@ -4,11 +4,11 @@ namespace Application.Interfaces
 {  
     public interface ITokenGenerator  
     {  
-        TokenResponse GenerateTokens(string userId, string email, string role);  
+        TokenResponse GenerateTokens(string userId, string email, string role, Guid guid, bool isOnboarded = true);  
 
         string GetEmailFromToken(ClaimsPrincipal user);  
 
-        string GetIdFromToken(ClaimsPrincipal user);  
+        string GetOwnerIdFromToken(ClaimsPrincipal user);  
     }  
 }  
 

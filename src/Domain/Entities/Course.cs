@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Security.Cryptography.X509Certificates;
 using Domain.Common.Entities;
 using Domain.Enum;
 
@@ -8,9 +7,9 @@ namespace Domain.Entities
 {
     public class Course : BaseEntity
     {
-        public string? Title { get; set; }
+        public string Title { get; set; }
 
-        public string? CourseImageUrl { get; set; }
+        public string CourseImageUrl { get; set; }
 
         public required string Description { get; set; }
 

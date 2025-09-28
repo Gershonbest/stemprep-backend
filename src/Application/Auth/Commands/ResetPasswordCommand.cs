@@ -1,52 +1,46 @@
-//using Application.Common.Models;
-//using Application.Extensions;
-//using Domain.Entities;
-//using MediatR;
+using Application.Common.Models;
+using Application.Extensions;
+using Application.Interfaces;
+using Domain.Common.Entities;
+using MediatR;
+using StackExchange.Redis;
 
-//namespace Application.Auth.Commands
-//{
-//    public class ResetPasswordCommand : IRequest<Result>
-//    {
-//        public string Email { get; set; }
-//        public string NewPassword { get; set; }
-//        public string ConfirmPassword { get; set; }
-//    }
+namespace Application.Auth.Commands
+{
+    public class ResetPasswordCommand : IRequest<Result>, IPasswordValidator
+    {
+        public string Email { get; set; }
+        public string NewPassword { get; set; }
+        public string ConfirmPassword { get; set; }
+        public string PasswordResetToken { get; set; }
+    }
 
-//    public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, Result>
-//    {
-//        private readonly UserManager<Student> _userManager;
-//        private readonly IMediator _mediator;
+    public class ResetPasswordCommandHandler(IApplicationDbContext context, IMediator mediator, IConnectionMultiplexer redis, ISecretHasherService secretHasherService) : IRequestHandler<ResetPasswordCommand, Result>
+    {
+        private readonly IDatabase _redisDb = redis.GetDatabase();
 
-//        public ResetPasswordCommandHandler(UserManager<Student> userManager, IMediator mediator)
-//        {
-//            _userManager = userManager;
-//            _mediator = mediator;
-//        }
+        public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
+        {
+            // Validate password using custom validator
+            await request.ValidateAsync(new PasswordValidator(), cancellationToken);
 
-//        public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
-//        {
-//            Student? user = await _userManager.FindByEmailAsync(request.Email);
-//            if (user == null)
-//            {
-//                return Result.Failure<ResetPasswordCommand>("Invalid email.");
-//            }
+            BaseUser user = await new AuthHelper(context).GetBaseUserByEmail(request.Email);
+            if (user == null)
+            {
+                return Result.Failure<ResetPasswordCommand>("Invalid email.");
+            }
 
-//            // Validate password using custom validator
-//            await request.ValidateAsync(new PasswordValidator(), cancellationToken);
+            string storedResetToken = await _redisDb.StringGetAsync($"PasswordResetToken:{request.Email}");
+            if (string.IsNullOrEmpty(storedResetToken) || storedResetToken != request.PasswordResetToken)
+            {
+                return Result.Failure<VerifyForgotPasswordCodeCommand>("Invalid or expired password reset token.");
+            }
 
-//            // Hash the new password
-//            user.Password = _userManager.PasswordHasher.HashPassword(user, request.NewPassword);
-
-//            // Update user with the new password
-//            IdentityResult result = await _userManager.UpdateAsync(user);
-//            if (!result.Succeeded)
-//            {
-//                return Result.Failure("Failed to reset the password.");
-//            }
-
-//            // Success response
-//            return Result.Success("Password reset successfully.");
-//        }
-//    }
-//}
+            user.PasswordHash = secretHasherService.Hash(request.NewPassword);
+            await context.SaveChangesAsync(cancellationToken);
+            // Success response
+            return Result.Success<ResetPasswordCommand>("Password reset successfully.");
+        }
+    }
+}
 

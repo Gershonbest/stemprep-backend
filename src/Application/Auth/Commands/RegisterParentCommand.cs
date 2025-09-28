@@ -15,16 +15,15 @@ public class RegisterParentCommand : IRequest<Result>, IUserValidator
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Email { get; set; }
-    public string Gender { get; set; }
     public string Password { get; set; }
-    public string PhoneNumber { get; set; }
 }
 
 
 public class RegisterParentCommandHandler(
     IEmailService emailSender,
     IConnectionMultiplexer redis,
-    IApplicationDbContext context) : IRequestHandler<RegisterParentCommand, Result>
+    IApplicationDbContext context,
+    ISecretHasherService secretHasherService) : IRequestHandler<RegisterParentCommand, Result>
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
 
@@ -35,36 +34,37 @@ public class RegisterParentCommandHandler(
         #endregion
 
         // Check if the student already exists
-        bool userExist = await context.Parents.AnyAsync(p => p.Email == request.Email, cancellationToken);
+        bool userExist = await new AuthHelper(context).GlobalCheckIfUserExists(request.Email);
 
         if (userExist)
             return Result.Failure(request, $"{request.Email} already exists");
 
         // Create the parent entity
-        Parent user = new()
+        Parent parent = new()
         {
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            UserType = UserType.Student,
-            UserTypeDesc = UserType.Student.ToString(),
+            PasswordHash = secretHasherService.Hash(request.Password),
+            UserType = UserType.Parent,
+            UserTypeDesc = UserType.Parent.ToString(),
             IsVerified = false,
             UserStatus = Status.Inactive,
             UserStatusDes = Status.Inactive.ToString(),
             LastModifiedDate = DateTime.UtcNow
         };
 
-        context.Parents.Add(user);
+        context.Parents.Add(parent);
         await context.SaveChangesAsync(cancellationToken);
 
         // Generate and save registration code to Redis
         string registrationCode = GenerateCode.GenerateRegistrationCode();
-        await _redisDb.StringSetAsync($"RegistrationCode:{user.Email}", registrationCode, TimeSpan.FromHours(2));
+        await _redisDb.StringSetAsync($"RegistrationCode:{parent.Email}", registrationCode, TimeSpan.FromHours(2));
 
         // Send the registration code to the user's email
-        await emailSender.SendRegistrationConfirmationEmailAsync(user.Email, user.FirstName, registrationCode);
+        await emailSender.SendRegistrationConfirmationEmailAsync(parent.Email, parent.FirstName, registrationCode);
 
 
-        return Result.Success<RegisterParentCommand>("Registration code sent successfully! Please confirm your registration.", user);
+        return Result.Success<RegisterParentCommand>("Registration code sent successfully! Please confirm your registration.");
     }
 }

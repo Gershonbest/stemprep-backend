@@ -1,11 +1,11 @@
 using Application.Common.Models;
 using Application.Interfaces;
-using Domain.Entities;
+using Domain.Common.Entities;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
+using System.Security.Cryptography;
+using System.Threading;
 
 namespace Application.Auth.Commands;
 
@@ -21,7 +21,7 @@ public class VerifyForgotPasswordCodeCommandHandler(IApplicationDbContext contex
 
     public async Task<Result> Handle(VerifyForgotPasswordCodeCommand request, CancellationToken cancellationToken)
     {
-        Student user = await context.Students.Where(s=> s.Email == request.Email).FirstOrDefaultAsync(cancellationToken);
+        BaseUser user = await new AuthHelper(context).GetBaseUserByEmail(request.Email);
 
         if (user == null)
         {
@@ -34,6 +34,17 @@ public class VerifyForgotPasswordCodeCommandHandler(IApplicationDbContext contex
             return Result.Failure<VerifyForgotPasswordCodeCommand>("Invalid or expired password reset code.");
         }
 
-        return Result.Success("Password reset code verified successfully.");
+        string resetToken = GenerateToken();
+        await _redisDb.StringSetAsync($"PasswordResetToken:{request.Email}", resetToken, TimeSpan.FromHours(1));
+
+
+        return Result.Success("Password reset token generated successfully.", resetToken);
+
+    }
+    private static string GenerateToken()
+    {
+        byte[] tokenData = new byte[32];
+        RandomNumberGenerator.Fill(tokenData);
+        return Convert.ToBase64String(tokenData);
     }
 }
