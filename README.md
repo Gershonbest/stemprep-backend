@@ -16,11 +16,11 @@ Robust, modern, and thoughtfully engineered backend powering the StemPrep platfo
 - Run locally in 60 seconds: `dotnet restore && dotnet run --project src/API/API.csproj`
 - Dockerized for easy demo: `docker build -t stemprep-backend . && docker run -p 8080:8080 ...`
 
-Badges (replace with your own if desired):
+Badges:
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4) ![EF Core](https://img.shields.io/badge/EF%20Core-9.0-informational) ![Swagger](https://img.shields.io/badge/Docs-Swagger-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue)
 
-## Real Features (Details)
+## Features (Details)
 
 - __Authentication & Roles__
   - Roles: `Parent`, `Tutor`, `Admin`, `Student`
@@ -78,26 +78,20 @@ Badges (replace with your own if desired):
 
 ## Live Demo & Screenshots
 
-- Live API (if available): https://stemprep-backend.onrender.com/swagger
-- Frontend (if available): https://stemprep.netlify.app/
+- Live API: https://stemprep-backend.onrender.com/swagger
+- Frontend: https://stemprep.netlify.app/
 - Screenshots: add images to `docs/images/` and showcase key flows (login, uploading docs, Swagger UI)
 
-## About the Project (1–2 sentences)
+## About the Project
 
 StemPrep helps parents and students connect with vetted tutors and manage study documents securely. This backend powers authentication, profiles, document uploads, and secure access to content.
 
-## What I built (highlights recruiters care about)
+## What I built
 
 - Secure auth with JWT and role-based access (Parent, Tutor, Admin, Student)
 - Document management with Cloudinary storage and image processing endpoints
 - PostgreSQL + EF Core with automatic migrations on startup
 - Production-ready setup: Serilog logs, global exception middleware, and Swagger in all environments
-
-## Contact
-
-- Portfolio: add-your-portfolio-url
-- LinkedIn: add-your-linkedin-url
-- Email: add-your-email
 
 ## Why This Stands Out
 
@@ -186,7 +180,7 @@ Project files of note:
 
 Never commit real secrets in `appsettings.json`. Prefer environment variables or .NET User Secrets in development.
 
-Common keys (do NOT paste real secrets in code):
+Common keys:
 
 - ConnectionStrings
   - `postgresConnection`
